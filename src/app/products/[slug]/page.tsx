@@ -1,4 +1,3 @@
-import { CoaLink } from "@/components/product/CoaLink";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -7,6 +6,9 @@ import { getProduct, inr, needOf, products, site } from "@/lib/data";
 import { Container } from "@/components/ui/Section";
 import { GlyphBadge } from "@/components/product/Pouch";
 import { PouchScene } from "@/components/product/PouchScene";
+import { IngredientOrbit } from "@/components/product/IngredientOrbit";
+import { DoseTimeline } from "@/components/product/DoseTimeline";
+import { LabCertificate } from "@/components/product/LabCertificate";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
 import { binaryFrag, whirlpoolFrag } from "@/components/gl/sectionShaders";
 import { Planet } from "@/components/space/Planet";
@@ -132,52 +134,32 @@ async function ProductPageContent({ params }: { params: PageProps<"/products/[sl
         </Container>
       </section>
 
-      {/* inside + how to take */}
+      {/* what's inside: the gummy in 3D, its actives on orbit rings */}
       <section className="py-24 sm:py-32">
-        <Container className="grid gap-16 lg:grid-cols-2">
-          <div>
-            <p className="eyebrow mb-5">What’s inside</p>
-            <h2 className="display text-4xl">Per gummy</h2>
-            <table className="mt-8 w-full text-left text-sm">
-              <tbody className="divide-y divide-line border-y border-line">
-                {p.ingredients.map((i) => (
-                  <tr key={i.name}>
-                    <th scope="row" className="py-4 pr-4 font-normal text-star/90">
-                      {i.name}
-                    </th>
-                    <td className="py-4 text-right font-mono text-dust">{i.amount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="mt-4 text-xs text-dust">Vegan. No artificial colours. Contains no flower or resin.</p>
+        <Container>
+          <p className="eyebrow mb-5">What&rsquo;s inside</p>
+          <h2 className="display max-w-2xl text-4xl sm:text-5xl">Per gummy, in orbit.</h2>
+          <div className="mt-14">
+            <IngredientOrbit slug={p.slug} />
           </div>
-          <div>
-            <p className="eyebrow mb-5">How to take it</p>
-            <h2 className="display text-4xl">Start low, go slow</h2>
-            <ol className="mt-8 space-y-5">
-              {p.howTo.map((h, i) => (
-                <li key={i} className="flex gap-5 text-star/85">
-                  <span className="font-mono text-sm text-flare">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="leading-relaxed">{h}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
+        </Container>
+      </section>
+
+      {/* how to take it: the dose clock */}
+      <section className="border-t border-line py-24 sm:py-32">
+        <Container>
+          <p className="eyebrow mb-5">How to take it</p>
+          <h2 className="display max-w-2xl text-4xl sm:text-5xl">
+            Start low, <em className="text-flare-soft">go slow.</em>
+          </h2>
+          <DoseTimeline color={p.color} notes={p.howTo} />
         </Container>
       </section>
 
       {/* lab report */}
       <section className="pb-24">
         <Container>
-          <div className="flex flex-col gap-6 rounded-[28px] border border-line bg-space-2 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
-            <div>
-              <p className="eyebrow mb-3">Lab report</p>
-              <p className="text-2xl font-bold">Batch {p.batch}</p>
-              <p className="mt-2 text-sm text-dust">Tested by an independent NABL-accredited lab for potency, heavy metals and microbes.</p>
-            </div>
-            <CoaLink url={p.coaUrl} label="Download certificate (PDF)" className="h-12 px-6" />
-          </div>
+          <LabCertificate batch={p.batch} coaUrl={p.coaUrl} color={p.color} />
         </Container>
       </section>
 

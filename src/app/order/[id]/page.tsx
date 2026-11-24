@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { LeafStar } from "@/components/brand/LeafStar";
 import { Container } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
-import { StatusSteps } from "@/components/order/StatusSteps";
+import { OrbitJourney } from "@/components/order/OrbitJourney";
 
 export const metadata: Metadata = { title: "Order confirmed", robots: { index: false } };
 
@@ -32,7 +32,7 @@ export default function OrderPage(props: PageProps<"/order/[id]">) {
         </p>
 
         <div className="mt-14 rounded-[28px] border border-line bg-space-2 p-7 sm:p-10">
-          <StatusSteps current={0} notes={{ 0: "Just now", 1: "Within 24 hours", 2: "1–2 days", 3: "3–6 days" }} />
+          <OrbitJourney current={0} notes={{ 0: "Just now", 1: "Within 24 hours", 2: "1–2 days", 3: "3–6 days" }} />
         </div>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">

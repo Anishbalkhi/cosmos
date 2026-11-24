@@ -8,9 +8,9 @@ import { useCart, cartTotals } from "@/lib/cart";
 import { useMounted } from "@/lib/useMounted";
 import { inr } from "@/lib/data";
 import { Container } from "@/components/ui/Section";
-import { Pouch } from "@/components/product/Pouch";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
-import { ButtonLink } from "@/components/ui/Button";
+import { EmptyOrbit } from "@/components/checkout/EmptyOrbit";
+import { PouchThumb, ShippingProgress, TrustRow } from "@/components/checkout/CommerceBits";
 import { Wordmark } from "@/components/brand/Wordmark";
 
 const STATES = [
@@ -42,6 +42,10 @@ export function CheckoutForm() {
   const [f, setF] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Fields, string>>>({});
   const [paying, setPaying] = useState(false);
+  // the step track lights each stage as its fields become valid
+  const live = validate(f);
+  const contactDone = !live.name && !live.email && !live.phone;
+  const deliveryDone = !live.address && !live.city && !live.pin;
 
   const set = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const v = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
@@ -67,18 +71,15 @@ export function CheckoutForm() {
 
   if (mounted && t.items.length === 0 && !paying) {
     return (
-      <Container className="py-24 text-center">
-        <h1 className="display text-5xl">Nothing to check out yet.</h1>
-        <ButtonLink href="/shop" className="mt-10" arrow>
-          Shop the Cure
-        </ButtonLink>
+      <Container className="py-16 sm:py-24">
+        <EmptyOrbit title="Nothing to check out yet." />
       </Container>
     );
   }
 
   return (
     <Container className="py-12 sm:py-16">
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <p className="eyebrow mb-3">Secure checkout</p>
           <h1 className="display text-5xl">Checkout</h1>
@@ -87,13 +88,15 @@ export function CheckoutForm() {
           ← Back to cart
         </Link>
       </div>
+      <StepTrack done={[contactDone, deliveryDone, f.adult]} />
 
       <form onSubmit={pay} noValidate className="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-12">
-          <fieldset>
-            <legend className="mb-6 flex items-center gap-3 text-lg font-bold">
+        <div className="space-y-6">
+          <fieldset className="rounded-[28px] border border-line bg-space-2/60 p-6 sm:p-8">
+            <legend className="sr-only">Contact</legend>
+            <p aria-hidden className="mb-6 flex items-center gap-3 text-lg font-bold">
               <Step n={1} /> Contact
-            </legend>
+            </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="name" label="Full name" error={errors.name} className="sm:col-span-2">
                 <input id="co-name" autoComplete="name" value={f.name} onChange={set("name")} className={input(errors.name)} />
@@ -110,10 +113,11 @@ export function CheckoutForm() {
             </div>
           </fieldset>
 
-          <fieldset>
-            <legend className="mb-6 flex items-center gap-3 text-lg font-bold">
+          <fieldset className="rounded-[28px] border border-line bg-space-2/60 p-6 sm:p-8">
+            <legend className="sr-only">Delivery address</legend>
+            <p aria-hidden className="mb-6 flex items-center gap-3 text-lg font-bold">
               <Step n={2} /> Delivery address
-            </legend>
+            </p>
             <div className="grid gap-4 sm:grid-cols-3">
               <Field id="address" label="House, street, area" error={errors.address} className="sm:col-span-3">
                 <textarea id="co-address" rows={2} autoComplete="street-address" value={f.address} onChange={set("address")} className={clsx(input(errors.address), "h-auto py-3")} />
@@ -135,10 +139,11 @@ export function CheckoutForm() {
             <p className="mt-3 text-xs text-dust">Ships in a plain outer box. Delivery in 3 to 6 working days.</p>
           </fieldset>
 
-          <fieldset>
-            <legend className="mb-6 flex items-center gap-3 text-lg font-bold">
+          <fieldset className="rounded-[28px] border border-line bg-space-2/60 p-6 sm:p-8">
+            <legend className="sr-only">Confirm</legend>
+            <p aria-hidden className="mb-6 flex items-center gap-3 text-lg font-bold">
               <Step n={3} /> Confirm
-            </legend>
+            </p>
             <label htmlFor="co-adult" className="flex cursor-pointer items-start gap-3 text-sm">
               <input id="co-adult" type="checkbox" checked={f.adult} onChange={set("adult")} className="mt-0.5 h-5 w-5 accent-[var(--color-flare)]" />
               <span>
@@ -157,21 +162,25 @@ export function CheckoutForm() {
           </fieldset>
         </div>
 
-        <aside className="h-fit rounded-[28px] border border-line bg-space-2 p-7 lg:sticky lg:top-28">
-          <p className="mb-5 font-semibold">Order summary</p>
-          <ul className="mb-6 space-y-4">
+        <aside className="grain relative h-fit overflow-hidden rounded-[28px] border border-line bg-space-2 p-7 lg:sticky lg:top-28">
+          <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgb(var(--accent-rgb)/0.16),transparent_70%)]" />
+          <p className="relative mb-5 font-mono text-[11px] tracking-[0.18em] text-dust uppercase">Order summary</p>
+          <ul className="relative mb-6 space-y-4">
             {t.items.map((l) => (
               <li key={l.slug} className="flex items-center gap-4">
-                <div className="relative w-12 shrink-0">
-                  <Pouch id={`co-${l.slug}`} name={l.product.short} color={l.product.color} glyph={l.product.glyph} />
+                <div className="relative w-14 shrink-0">
+                  <PouchThumb product={l.product} id={`co-${l.slug}`} />
                   <span className="absolute -top-2 -right-2 grid h-5 w-5 place-items-center rounded-full bg-star text-[10px] font-bold text-space">{l.qty}</span>
                 </div>
                 <p className="flex-1 text-sm">{l.product.name}</p>
-                <p className="text-sm">{inr(l.product.price * l.qty)}</p>
+                <p className="text-sm tabular-nums">{inr(l.product.price * l.qty)}</p>
               </li>
             ))}
           </ul>
-          <OrderSummary totals={t} />
+          <ShippingProgress subtotal={t.subtotal} />
+          <div className="mt-6">
+            <OrderSummary totals={t} />
+          </div>
           <button
             type="submit"
             disabled={paying || !mounted}
@@ -182,12 +191,45 @@ export function CheckoutForm() {
           <p className="mt-4 flex items-center justify-center gap-2 text-xs text-dust">
             Powered by Razorpay · UPI · Cards · Netbanking
           </p>
+          <TrustRow className="mt-6" />
           <div className="mt-6 border-t border-line pt-5 text-center text-xs text-dust">
             <Wordmark className="text-sm opacity-60" />
           </div>
         </aside>
       </form>
     </Container>
+  );
+}
+
+/** Contact, delivery, confirm and pay as an orbit line whose stops light up as each is completed. */
+function StepTrack({ done }: { done: boolean[] }) {
+  const labels = ["Contact", "Delivery", "Confirm & pay"];
+  const reached = done.findIndex((d) => !d);
+  const progress = reached === -1 ? 1 : reached / (labels.length - 1);
+  const current = reached === -1 ? labels.length - 1 : reached;
+  return (
+    <div className="mb-10" aria-hidden>
+      <div className="relative mx-3 h-px bg-white/15">
+        <div className="absolute inset-y-0 left-0 bg-flare transition-[width] duration-700 ease-cosmic" style={{ width: `${progress * 100}%` }} />
+        {labels.map((l, i) => (
+          <span
+            key={l}
+            className={clsx(
+              "absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-space transition-colors duration-500",
+              done[i] ? "bg-flare shadow-[0_0_12px_2px_var(--color-flare)]" : i === current ? "bg-star" : "bg-white/25",
+            )}
+            style={{ left: `${(i / (labels.length - 1)) * 100}%` }}
+          />
+        ))}
+      </div>
+      <div className="mt-4 flex justify-between font-mono text-[11px] tracking-[0.14em] text-dust uppercase">
+        {labels.map((l, i) => (
+          <span key={l} className={clsx(done[i] && "text-flare-soft")}>
+            {l}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 

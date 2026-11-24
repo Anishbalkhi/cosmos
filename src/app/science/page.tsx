@@ -1,4 +1,4 @@
-import { CoaLink } from "@/components/product/CoaLink";
+import { LabCertificate } from "@/components/product/LabCertificate";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Section";
@@ -108,20 +108,17 @@ export default function SciencePage() {
         <Container>
           <p className="eyebrow mb-5">Lab reports</p>
           <h2 className="display max-w-3xl text-4xl sm:text-5xl">Every batch, published.</h2>
-          <ul className="mt-12 divide-y divide-line border-y border-line">
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
             {products.map((p) => (
-              <li key={p.batch} className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="h-3 w-3 rounded-full" style={{ background: p.color }} />
-                  <div>
-                    <p className="font-semibold">{p.name}</p>
-                    <p className="font-mono text-xs text-dust">Batch {p.batch} · tested Dec 2026</p>
-                  </div>
-                </div>
-                <CoaLink url={p.coaUrl} label="Download PDF" className="h-11 px-5" />
-              </li>
+              <div key={p.batch}>
+                <p className="mb-3 flex items-center gap-3 font-semibold">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.color, boxShadow: `0 0 10px ${p.color}` }} />
+                  {p.name}
+                </p>
+                <LabCertificate batch={p.batch} coaUrl={p.coaUrl} color={p.color} compact />
+              </div>
             ))}
-          </ul>
+          </div>
         </Container>
       </section>
     </>

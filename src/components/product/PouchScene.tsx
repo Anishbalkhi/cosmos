@@ -6,6 +6,7 @@ import { getProduct, type Glyph } from "@/lib/data";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
 import { pouchFrag } from "@/components/gl/objectShaders";
 import { pouchTextures, type PouchTextures } from "./pouchArt";
+import { GUMMY, rgb } from "./colors";
 
 const POST: PostSettings = { threshold: 1.0, bloom: 0.38, streak: 0.14, aberration: 0.006, exposure: 1.0, grain: 0.03, vignette: 0.28 };
 
@@ -17,18 +18,6 @@ const WORLD_LIGHT: Record<Glyph, [number, number, number]> = {
   moon: [0.7, 0.62, 0.5],
   asteroids: [0.8, 0.45, 0.3],
 };
-// gummy colours follow each formula's flavour: blackcurrant, mango, orange
-const GUMMY: Record<string, [number, number, number]> = {
-  "event-horizon": [0.34, 0.07, 0.5],
-  nirvana: [1.0, 0.6, 0.1],
-  "moonwalk-bytes": [1.0, 0.42, 0.06],
-};
-
-function rgb(hex: string): [number, number, number] {
-  const n = parseInt(hex.replace("#", ""), 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-}
-
 /**
  * The product as a real 3D object: its pouch, printed front and back, with gummies in orbit,
  * in front of its world. Ray-traced in the same HDR pipeline as the hero black hole.

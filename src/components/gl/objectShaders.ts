@@ -552,3 +552,47 @@ void main(){
   gl_FragColor = finish(col);
 }
 `;
+
+/**
+ * One gummy, close up and turning slowly in a soft glow of its formula's colour: the centre of
+ * the "What's inside" ingredient orbit on product pages.
+ *   uGum   candy colour   uGlow  light behind it
+ */
+export const gummyFrag =
+  common +
+  finish +
+  space3d +
+  gummyChunk +
+  /* glsl */ `
+uniform vec3 uGlow;
+void main(){
+  vec2 uv = screenUv();
+  vec3 ro = vec3(0.0, 0.0, 3.0);
+  vec3 rd = camRay(uv);
+  mat3 R = rotY(uTime * 0.45) * rotX(0.5 + 0.18 * sin(uTime * 0.37)) * rotZ(0.22);
+  vec3 col = vec3(0.004, 0.004, 0.008);
+  col += uGlow * 0.22 * exp(-length(uv) * 3.2) + uGlow * 0.05 * exp(-length(uv) * 1.2);
+  col += vec3(stars(uv + 3.0, 46.0)) * 0.35;
+  const float SC = 5.6;                                          // the gummy fills most of the orbit's centre
+  vec2 bs = sphereHit(ro, rd, 0.78);
+  if (bs.y > 0.0) {
+    float t = max(bs.x, 0.0);
+    bool hit = false;
+    for (int i = 0; i < 64; i++) {
+      float d = sdGummy((ro + rd * t) * R / SC) * SC;
+      if (d < 0.0004 * t) { hit = true; break; }
+      t += d * 0.9;
+      if (t > bs.y) break;
+    }
+    if (hit) {
+      vec3 p = ro + rd * t;
+      const vec2 e = vec2(1.0, -1.0) * 0.0015;
+      vec3 n = normalize(e.xyy * sdGummy((p + e.xyy) * R / SC) + e.yyx * sdGummy((p + e.yyx) * R / SC)
+                       + e.yxy * sdGummy((p + e.yxy) * R / SC) + e.xxx * sdGummy((p + e.xxx) * R / SC));
+      col = shadeGummy(p * R / SC, n, rd, normalize(vec3(0.5, 0.6, 0.7)));
+      col += uGlow * 0.25 * pow(1.0 - max(dot(n, -rd), 0.0), 3.0);   // rim from the glow behind
+    }
+  }
+  gl_FragColor = finish(col);
+}
+`;
