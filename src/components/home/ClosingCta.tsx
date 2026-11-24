@@ -1,21 +1,64 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { WaitlistForm } from "@/components/layout/WaitlistForm";
 import { LeafStar } from "@/components/brand/LeafStar";
-import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
-import { bipolarNebulaFrag } from "@/components/gl/sectionShaders";
+import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
+import { dawnFrag } from "@/components/gl/sectionShaders";
 
-const POST = { threshold: 0.75, bloom: 0.55, streak: 0.12, aberration: 0.012, exposure: 1.05, grain: 0.03, vignette: 0.3 };
+const POST: PostSettings = { threshold: 0.85, bloom: 0.45, streak: 0.28, aberration: 0, exposure: 1.0, grain: 0.03, vignette: 0.3 };
 
+/** The Earth photograph (NASA, public domain) as a power-of-two canvas, so the GPU can mipmap it. */
+function useEarthTexture() {
+  const [tex, setTex] = useState<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const img = new Image();
+    img.onload = () => {
+      if (!alive) return;
+      const c = document.createElement("canvas");
+      c.width = c.height = 1024;
+      c.getContext("2d")!.drawImage(img, 0, 0, 1024, 1024);
+      setTex(c);
+    };
+    img.src = "/planets/earth.webp";
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return tex;
+}
+
+/**
+ * "Explore with intention. Find your Cosmos." over a sunrise seen from orbit: Earth's curved
+ * horizon low in the frame, its night side dark, the atmosphere glowing along the limb, and the
+ * sun climbing over the edge as the section scrolls in. The headline sits in clean dark space.
+ */
 export function ClosingCta() {
+  const section = useRef<HTMLElement>(null);
+  const rise = useRef(0);
+  const earth = useEarthTexture();
+  const textures = useCallback((): Record<string, TexImageSource> => (earth ? { uEarth: earth } : {}), [earth]);
+
+  const uniforms = useCallback(() => {
+    const el = section.current;
+    let target = 0;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      // 0 as the section enters, 1 once it is settled in view
+      target = Math.min(1, Math.max(0, (window.innerHeight - r.top) / (window.innerHeight * 0.9)));
+    }
+    rise.current += (target - rise.current) * 0.05;
+    return { uRise: rise.current };
+  }, []);
+
   return (
-    <section id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden bg-black py-32 sm:py-44">
-      <div className="absolute inset-0 -z-10">
-        {/* a bipolar nebula opening around the headline (reference pin 611574824453228661) */}
-        <ShaderCanvas frag={bipolarNebulaFrag} scale={0.6} post={POST} />
+    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden bg-black pt-32 pb-[34vh] sm:pt-40">
+      <div className="absolute inset-0 -z-10" aria-hidden>
+        {earth && <ShaderCanvas frag={dawnFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}
       </div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_50%_55%,rgb(0_0_0/0.5),rgb(0_0_0/0.15)_80%)]" />
-      <div className="mx-auto max-w-4xl px-5 text-center sm:px-8">
+      {/* wide enough for "Find your Cosmos." on one centred line at the largest size (it overflowed a 4xl column) */}
+      <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
         <LeafStar className="mx-auto h-12 w-12" />
         <p className="bracket mt-8 text-star/80">[ Your next discovery starts here ]</p>
         <h2 data-split className="display mt-6 text-6xl sm:text-8xl lg:text-9xl">

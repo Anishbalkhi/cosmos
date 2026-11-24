@@ -56,6 +56,8 @@
   html {
     background: var(--color-space);
     color-scheme: dark;
+    /* keep the scrollbar's space reserved, so locking scroll (intro, arrival, menus) never shifts the layout */
+    scrollbar-gutter: stable;
   }
   /* decorative orbits and glows may poke past the edge; never let them cause sideways scroll.
      `clip` (unlike `hidden`) doesn't create a scroll container, so sticky elements keep working. */

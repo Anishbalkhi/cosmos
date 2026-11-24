@@ -44,6 +44,7 @@ uniform float uSteps;
 uniform vec3 uShake;
 uniform vec2 uHole0;   // where the arrival's black hole starts (the intro portal), in uv
 uniform sampler2D uCode;
+uniform sampler2D uNoise;  // 256² random texture for cheap 3D noise (see zoomNoiseTexture)
 
 vec3 camPos;
 
@@ -67,9 +68,9 @@ vec4 diskSample(vec3 p, float r, vec3 rayDir){
   // gas orbits toward increasing angle, the same way the Doppler velocity points
   float a2 = ang - uTime * omega * (1.6 + uBoost * 7.0);
   float streak = fbm(vec2(r * 7.0, a2 * 2.0));
-  float fine = noise(vec2(r * 46.0, a2 * 1.3));
+  float fine = noise(vec2(r * 26.0, a2 * 1.3));   // fine enough for texture, coarse enough not to alias into grooves
   float dens = smoothstep(2.4, 3.1, r) * (1.0 - smoothstep(6.5, 11.5, r));
-  dens *= 0.25 + 1.1 * streak * streak + 0.35 * fine;
+  dens *= 0.25 + 1.1 * streak * streak + 0.18 * fine;
 
   const float rin = 2.6;
   float x = r / rin;
@@ -145,13 +146,29 @@ vec3 blackHole(vec2 uv, float baseDist){
 
 // ---- Arrival sequence after loading (reference pin 880313058437018011) ----
 // One continuous motion driven by s (0 → 1), timed like the reference video:
-//   0.00–0.34  a wide fan of glowing code lanes pours into a small fiery hole on the left
-//   0.34–0.50  the camera whips round: the fan swings and smears, the hole swings to centre
-//   0.50–0.72  thick crisp light rays fill the frame and stream into the hole
-//   0.72–0.88  the rays thin to slivers and vanish; turbulent fire swirls round a huge black centre
-//   0.88–1.00  the flames clear and the hole draws back into the hero black hole (no cut)
+//   0.00–0.34  a fan of readable code lanes pours into a small fiery hole on the left
+//   0.24–0.56  the camera banks and pans to face the hole (one long eased turn, no jump)
+//   0.36–0.72  crisp light rays grow out from the hole and stream into it, in two depth layers
+//   0.62–0.88  the rays thin away; turbulent fire swirls round a pure black centre
+//   0.86–1.00  the fire fades while the disk returns and the hole eases back to the hero's size
 
 float ease(float a, float b, float x){ return smoothstep(a, b, x); }
+float pixUv(){ return 1.0 / min(uRes.x, uRes.y); }    // one screen pixel, in uv units
+
+// 3D value noise from one texture fetch (green = red at (x-37, y-17)); the bias pins the top mip
+float noise3(vec3 x){
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  vec2 uv = i.xy + vec2(37.0, -17.0) * i.z + f.xy;
+  vec2 rg = texture2D(uNoise, (uv + 0.5) / 256.0, -100.0).yx;
+  return mix(rg.x, rg.y, f.z);
+}
+float fbm3(vec3 p){
+  float v = 0.0, a = 0.5;
+  for (int i = 0; i < 4; i++) { v += a * noise3(p); p = p * 2.02 + vec3(1.7, -2.3, 0.9); a *= 0.5; }
+  return v;
+}
 
 // Point-lens mapping: the light we see at θ left its source at β = θ (1 - θE² / |θ|²).
 // Inside the Einstein ring β flips to the far side, so everything behind the
@@ -163,118 +180,130 @@ vec2 lens(vec2 p, float hr){
 }
 
 vec3 streams(vec2 p, float s, float hr){
-  // the whip: the sheet swings round and stretches as the camera turns toward the hole
-  float whip = ease(0.3, 0.5, s);
-  vec2 q = rot(p, -whip * 1.9) / (1.0 + 1.6 * whip);
-  float zoom = 1.0 + 1.6 * whip;
+  // the camera speeds up: the fan stretches toward the hole and its glyphs smear into streaks
+  float zoom = 1.0 + 1.4 * ease(0.22, 0.5, s);
+  vec2 q = p / zoom;
   float u = q.x;
   float rh = hr * 0.9 / zoom;
   if (u <= rh) return vec3(0.0);
-  // a wide fan: by the edge of the screen it fills the whole height
-  float w = hr * 0.5 / zoom + 0.95 * pow(u, 1.05);
-  float v = (q.y - 0.12 * u * u) / w;
-  float inside = 1.0 - smoothstep(0.82, 1.0, abs(v));
-  // ~70 thin lanes, each one row of real code squeezed into a dotted line
-  float lv = (v * 0.5 + 0.5) * 70.0;
+  float w = hr * 0.5 / zoom + 0.78 * u;                  // straight-sided fan, centred on the hole
+  float v = (q.y - 0.04 * u * u) / w;
+  float inside = 1.0 - smoothstep(0.86, 1.0, abs(v));
+  // 36 lanes, each a readable line of code, anti-aliased against the pixel size
+  const float LANES = 36.0;
+  float lv = (v * 0.5 + 0.5) * LANES;
   float lane = floor(lv);
   float lh = hash(vec2(lane, 3.7));
-  float inLane = 1.0 - smoothstep(0.16, 0.34, abs(fract(lv) - 0.5));
+  float fw = LANES / (2.0 * w) * pixUv() * zoom * 1.5;  // lane fraction covered by one pixel
+  float inLane = 1.0 - smoothstep(0.36 - fw, 0.44 + fw, abs(fract(lv) - 0.5));
+  inLane = mix(inLane, 0.8, smoothstep(0.12, 0.35, fw)); // lanes thinner than ~3px blend to their average: no moiré
   // time dilation: log(u - rh) piles the text up at the horizon; each lane flows at its own speed
   float x = u - rh;
-  float tx = log(x / hr) * 0.55 + 0.38 * exp(-sq(x / (hr * 2.6))) + uTime * (0.08 + 0.26 * s) * (0.7 + 0.6 * lh) + lh * 5.0;
-  float ty = (lane + 0.5 + (fract(lv) - 0.5) * 0.9) / 32.0;
+  float tx = log(x / hr) * 0.55 + 0.38 * exp(-sq(x / (hr * 2.6))) + uTime * (0.07 + 0.22 * s) * (0.7 + 0.6 * lh) + lh * 5.0;
+  float ty = (lane + 0.5 + (fract(lv) - 0.5) * 0.86) / 32.0;
   float near = 1.0 - smoothstep(0.0, 0.55, u);
-  // the dots smear into streaks as the speed builds and the camera whips
-  float smear = 0.008 + 0.05 * near + 0.12 * ease(0.14, 0.34, s) + 0.3 * whip;
+  float smear = 0.006 + 0.04 * near + 0.1 * ease(0.16, 0.34, s) + 0.25 * ease(0.34, 0.48, s);
   float text = 0.0;
   for (int i = 0; i < 6; i++) text += texture2D(uCode, vec2(tx + (float(i) - 2.5) * smear, ty)).r;
-  text = text / 6.0 * inLane * (0.35 + 0.9 * lh);
+  text = text / 6.0 * inLane * (0.55 + 0.75 * lh);
   // gravitational redshift: light climbing out of the well dims and reddens
   float gz = sqrt(clamp(1.0 - rh / u, 0.0, 1.0));
-  vec3 c = mix(vec3(0.72, 0.84, 1.0), vec3(1.0, 0.78, 0.5), near * near);
+  vec3 c = mix(vec3(0.78, 0.88, 1.0), vec3(1.0, 0.8, 0.55), near * near);
   c = mix(vec3(1.0, 0.32, 0.08), c, gz);
-  vec3 col = c * text * inside * (0.8 + 2.2 * near) * 2.0 * gz * gz;
-  col += vec3(1.0, 0.6, 0.28) * exp(-sq((abs(v) - 0.92) / 0.03)) * near * 0.8 * gz;   // bright fan edges
-  col += vec3(0.3, 0.42, 0.75) * inside * 0.03 * (1.0 - near);                         // faint haze between lanes
+  vec3 col = c * text * inside * (1.0 + 2.2 * near) * 1.9 * gz * gz;
+  col += vec3(1.0, 0.62, 0.3) * exp(-sq((abs(v) - 0.94) / 0.06)) * near * 0.15 * gz;  // soft glow along the edges
   return col * smoothstep(hr * 0.9, hr * 2.2, length(p));
+}
+
+float rayLayer(float a, float r, float n, float seed, float widthMul, float speed, float pa){
+  float fa = a / 6.2831 * n + seed;
+  float id = mod(floor(fa), n);                          // same ray on both sides of the atan seam
+  float h = hash(vec2(id, seed));
+  float h2 = hash(vec2(id, seed + 4.1));
+  float edge = abs(fract(fa) - 0.5);
+  float width = (0.14 + 0.3 * h) * widthMul;
+  float fw = n / 6.2831 * pa;                            // one pixel, in fractions of a ray slot
+  float ray = 1.0 - smoothstep(width - fw, width + fw, edge);
+  // speed lines along each ray, rushing inward
+  float dash = fract(r * (1.2 + h2) * 2.0 + uTime * speed * (0.8 + h) + h * 7.0);
+  float streak = 0.55 + 0.45 * noise(vec2(id * 13.1 + floor(edge * 18.0), r * 6.0 + uTime * speed * 2.0));
+  ray *= (0.6 + 0.4 * smoothstep(0.0, 0.3, dash) * (1.0 - smoothstep(0.6, 1.0, dash))) * streak;
+  return ray * step(0.18, h2) * (0.6 + 0.6 * h);
 }
 
 vec3 rays(vec2 p, float s, float hr){
   float r = length(p);
   float a = atan(p.y, p.x);
-  float twist = 0.6 * ease(0.62, 0.86, s);                 // they begin to curl as the fire takes over
-  float fa = (a + twist * log(r + 0.05)) / 6.2831 * 60.0;
-  float id = floor(fa);
-  float h = hash(vec2(id, 5.0));
-  float h2 = hash(vec2(id, 9.0));
-  // crisp wedges of uneven width that thin to slivers before they vanish
-  float width = (0.16 + 0.3 * h) * (1.0 - 0.85 * ease(0.64, 0.84, s));
-  float edge = abs(fract(fa) - 0.5);
-  float ray = 1.0 - smoothstep(width * 0.82, width, edge);
-  // fine streaks running along each ray, flowing inward
-  float fib = 0.5 + 0.5 * noise(vec2(id * 7.3 + edge * 46.0, r * 3.0 + uTime * (2.4 + h)));
-  float flow = fract(r * (0.8 + h2) + uTime * (1.0 + 0.9 * h) + h * 7.0);
-  ray *= mix(1.0, smoothstep(0.0, 0.25, flow) * (1.0 - smoothstep(0.75, 1.0, flow)), 0.35) * fib;
-  ray *= step(0.16, h2) * smoothstep(hr * 1.15, hr * 2.1, r);
-  vec3 c = mix(vec3(0.84, 0.88, 0.96), vec3(0.62, 0.72, 0.96), h);
-  c = mix(vec3(1.0, 0.62, 0.34), c, smoothstep(hr * 1.4, hr * 4.0, r));   // warm where they meet the ring
-  return c * ray * (0.6 + 0.7 * h);
+  float pa = pixUv() / max(r, 1e-3);                     // one pixel, in radians, at this radius
+  float thin = 1.0 - 0.85 * ease(0.62, 0.76, s);         // they thin to slivers before the fire takes over
+  float nearL = rayLayer(a, r, 46.0, 1.3, thin, 1.6, pa);
+  float farL = rayLayer(a + 0.04, r, 90.0, 7.9, thin * 0.6, 0.9, pa);
+  // they grow outward from the hole as the camera turns into it, instead of popping in
+  float reach = mix(hr * 1.3, 1.9, ease(0.36, 0.58, s));
+  float grow = 1.0 - smoothstep(reach - 0.3, reach, r);
+  float base = smoothstep(hr * 1.15, hr * 2.0, r) * grow;
+  vec3 c = vec3(0.92, 0.94, 1.0) * nearL + vec3(0.55, 0.66, 0.95) * farL * 0.6;
+  c = mix(vec3(1.0, 0.62, 0.34) * (nearL + farL * 0.5), c, smoothstep(hr * 1.4, hr * 4.0, r));
+  return c * base * (0.5 + 0.7 * smoothstep(0.2, 1.2, r));   // brighter toward the edges: perspective
 }
 
 vec3 vortex(vec2 p, float s, float hr){
   float r = length(p);
   float a = atan(p.y, p.x);
-  // log-spiral flow mapped through cos/sin so there is no seam; domain-warped for turbulent flame
-  float sw = a + log(r + 0.001) * 1.7 - uTime * 0.75;
-  vec2 q = vec2(cos(sw), sin(sw)) * (1.1 + r * 2.2) + vec2(0.0, -uTime * 0.2);
-  vec2 wq = vec2(fbm(q * 1.5 + uTime * 0.15), fbm(q * 1.5 + 5.2 - uTime * 0.12));
-  float f = fbm(q * 2.1 + wq * 1.9);
-  float f2 = fbm(q * 4.8 + wq * 2.6 + 3.1);
-  // high contrast: tongues of flame with dark gaps between them, as in the reference
-  float fire = pow(f, 3.2) * 2.6 + pow(f2, 4.0) * 1.6;
-  float band = smoothstep(hr * 0.98, hr * 1.2, r) * (1.0 - smoothstep(hr * 1.8, hr * 3.8, r));
-  vec3 c = mix(vec3(0.42, 0.06, 0.01), vec3(1.0, 0.42, 0.07), smoothstep(0.1, 0.55, fire));
-  c = mix(c, vec3(1.0, 0.78, 0.45), smoothstep(0.9, 1.5, fire));
-  c *= fire * band * 0.95;
-  c += vec3(0.25, 0.35, 0.75) * pow(fbm(q * 2.4 + 9.0), 4.0) * band * 0.25;   // cool smoke between the flames
-  c += vec3(1.0, 0.7, 0.38) * exp(-sq((r - hr * 1.04) / (hr * 0.05))) * 1.1;  // white-hot inner edge
+  float lr = log(max(r, 1e-4) / hr);
+  // a log spiral flowing inward, sampled on a cylinder in 3D noise so the angle has no seam
+  float sw = a + lr * 1.5 - uTime * 0.6;
+  vec3 q = vec3(cos(sw) * 1.6, sin(sw) * 1.6, lr * 2.2 - uTime * 0.9);
+  vec3 wq = vec3(fbm3(q * 0.8 + 3.1), fbm3(q * 0.8 - 1.7), 0.0);
+  float f = fbm3(q * 1.3 + wq * 1.6);
+  // ridged turbulence: tongues of flame with dark gaps between them
+  float tongue = 1.0 - abs(fbm3(q * 2.6 + wq * 2.0 + 7.0) * 2.0 - 1.0);
+  float fire = smoothstep(0.35, 0.75, f) * (0.35 + 0.9 * pow(tongue, 3.0));
+  float band = smoothstep(hr * 0.98, hr * 1.2, r) * (1.0 - smoothstep(hr * 1.7, hr * 3.6, r));
+  vec3 c = mix(vec3(0.0), vec3(0.45, 0.06, 0.01), smoothstep(0.0, 0.25, fire));
+  c = mix(c, vec3(1.0, 0.36, 0.05), smoothstep(0.2, 0.55, fire));
+  c = mix(c, vec3(1.0, 0.72, 0.36), smoothstep(0.6, 0.95, fire));
+  c *= 1.6 * band;
+  c += vec3(1.0, 0.62, 0.3) * exp(-sq((r - hr * 1.04) / (hr * 0.05))) * 0.9;   // hot inner edge
   return c;
 }
 
 vec3 holeRim(vec2 p, float hr, float heat){
   float r = length(p);
   float a = atan(p.y, p.x);
-  float fire = fbm(vec2(a * 3.0 - uTime * 2.2, r * 26.0 - uTime));
-  float rim = exp(-sq((r - hr * 1.12) / (hr * 0.22)));
-  vec3 col = vec3(1.0, 0.5, 0.14) * rim * (0.6 + 1.8 * fire) * heat;
-  col += vec3(1.0, 0.82, 0.55) * exp(-sq((r - hr * 1.02) / (hr * 0.04))) * 0.9;
-  col += vec3(1.0, 0.45, 0.12) * exp(-r * r / (hr * hr * 7.0)) * 0.35 * heat;
-  // the thin disk seen almost edge-on, flaring sideways like the reference's hole
-  col += vec3(1.0, 0.6, 0.25) * exp(-sq(p.y / (hr * 0.09))) * exp(-abs(p.x) / (hr * 2.2)) * 1.2 * heat * (1.0 - smoothstep(0.0, 1.0, r / (hr * 6.0)));
+  float fire = noise3(vec3(cos(a) * 3.0, sin(a) * 3.0, r * 18.0 - uTime * 1.5));   // seamless round the ring
+  float rim = exp(-sq((r - hr * 1.1) / (hr * 0.18)));
+  vec3 col = vec3(1.0, 0.48, 0.12) * rim * (0.45 + 1.2 * fire) * heat;
+  col += vec3(1.0, 0.8, 0.52) * exp(-sq((r - hr * 1.02) / (hr * 0.035))) * 0.7;
+  col += vec3(1.0, 0.42, 0.1) * exp(-r * r / (hr * hr * 5.0)) * 0.15 * heat;
   return col;
 }
 
 vec3 arrival(vec2 uv, float s){
-  // the hole: from the portal, a glide left so the fan of code fills the frame, then the whip to centre
-  vec2 left = vec2(-0.36, 0.03);
-  vec2 hole = mix(mix(uHole0, left, ease(0.0, 0.16, s)), vec2(0.0), ease(0.32, 0.5, s));
-  // its size: slow approach, rush in through the rays and the fire, then draw back to the hero's size
-  float hr = 0.045 + 0.015 * ease(0.0, 0.34, s) + 0.02 * ease(0.34, 0.5, s) + 0.07 * ease(0.5, 0.72, s)
-           + 0.12 * ease(0.72, 0.86, s) - 0.105 * ease(0.86, 1.0, s);
+  // the camera: from the portal, a drift left so the fan fills the frame, then one long eased turn onto the hole
+  vec2 left = vec2(-0.34, 0.02);
+  vec2 hole = mix(mix(uHole0, left, ease(0.0, 0.2, s)), vec2(0.0), smoothstep(0.24, 0.56, s));
+  // its size: approach, rush in through the rays and the fire, then ease back to the hero's size
+  float hr = 0.04 + 0.03 * ease(0.0, 0.34, s) + 0.02 * ease(0.34, 0.5, s) + 0.07 * ease(0.5, 0.72, s)
+           + 0.11 * ease(0.72, 0.86, s) - 0.105 * smoothstep(0.86, 1.0, s);
   vec2 p = uv - hole;
   float r = length(p);
-  float wS = 1.0 - ease(0.42, 0.55, s);
-  float wR = ease(0.38, 0.5, s) * (1.0 - ease(0.7, 0.86, s));
-  float wV = ease(0.64, 0.8, s) * (1.0 - ease(0.88, 1.0, s));
-  // the hole IS the hero black hole, seen from further away (shadow radius ≈ 4.55 / distance);
-  // its disk steps back while the flames burn, and returns as they clear
-  vec3 col = blackHole(p, 4.55 / hr) * (1.0 - 0.85 * wV);
+
+  float wS = 1.0 - ease(0.36, 0.5, s);
+  float wR = ease(0.36, 0.48, s) * (1.0 - ease(0.66, 0.78, s));
+  float wV = ease(0.62, 0.78, s) * (1.0 - ease(0.88, 1.0, s));
+  // the hero's disk: seen small at the start, gone while the rays and the fire fill the frame
+  // (so no belt crosses the black centre, and the costly ray-march is skipped), back as the fire fades
+  float disk = min(1.0, (1.0 - ease(0.3, 0.44, s)) + ease(0.86, 0.98, s));
+  vec3 col = vec3(0.0);
+  if (disk > 0.001) col = blackHole(p, 4.55 / hr) * disk;
+
   vec3 over = vec3(0.0);
   vec2 b = lens(p, hr);                                   // everything behind the hole is seen through its lens
   if (wS > 0.0) over += streams(b, s, hr) * wS;
   if (wR > 0.0) over += rays(b, s, hr) * wR;
   if (wV > 0.0) over += vortex(p, s, hr) * wV;
-  over += holeRim(p, hr, (0.7 + 0.8 * ease(0.3, 0.7, s)) * (1.0 - ease(0.84, 1.0, s)));
+  over += holeRim(p, hr, (0.7 + 0.6 * ease(0.3, 0.7, s)) * (1.0 - ease(0.86, 1.0, s)));
   over *= smoothstep(hr * 0.96, hr * 1.02, r);           // the event horizon swallows everything
   return col + over;
 }
@@ -283,11 +312,13 @@ void main(){
   vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / min(uRes.x, uRes.y);
   // hand-held camera: offset + roll from JS (springy, follows the speed of the dive)
   uv = rot(uv, uShake.z) + uShake.xy;
-  uv -= vec2(0.0, 0.11);
   float s = 1.0 - clamp(uWarp, 0.0, 1.0);          // 0 = start of the arrival, 1 = hero
+  // the whip: the camera banks as it turns onto the hole, and levels out again
+  if (s < 1.0) uv = rot(uv, sin(3.14159 * ease(0.24, 0.56, s)) * 0.26);
+  uv -= vec2(0.0, 0.11);
   // the arrival ends exactly on the hero view (hole centred, distance 27.6), so no cut is needed
   vec3 col = s < 1.0 ? arrival(uv, s) : blackHole(uv, 27.6);
-  col *= 1.0 - smoothstep(0.6, 1.0, uPush) * 0.95;
+  col *= 1.0 - smoothstep(0.5, 0.95, uPush) * 0.97;   // fully dark before the manifesto surfaces
   col *= smoothstep(1.5, 0.3, length(uv));
 #ifdef HDR
   gl_FragColor = vec4(col, 1.0);                   // linear HDR: bloom + tone map happen in post

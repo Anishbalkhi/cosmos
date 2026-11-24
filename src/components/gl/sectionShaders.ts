@@ -52,8 +52,9 @@ vec4 rocks(vec2 p, float scale, float seed, vec2 drift, float lit, float aa, flo
       vec3 n = normalize(vec3(s + bump * 0.7, z + 0.15));
       float diff = max(dot(n, L), 0.0);
       float rim = pow(1.0 - z, 2.5) * max(dot(normalize(s + 1e-4), normalize(L.xy)), 0.0);
-      float albedo = 0.05 + 0.07 * noise(q * 30.0 / r + h * 2.0);
-      vec3 rc = gRockTint * albedo * diff * 1.6 + gRimTint * rim * 1.4;
+      float albedo = 0.1 + 0.12 * noise(q * 30.0 / r + h * 2.0);
+      // key light, a soft fill on the shadow side (so rocks read as solid, not as flat dark blobs), rim
+      vec3 rc = gRockTint * albedo * (diff * 1.6 + 0.3 * (0.4 + 0.6 * z)) + gRimTint * rim * 1.4;
       rc *= lit;
       col = mix(col, rc, c * (1.0 - cov));
       cov = max(cov, c);
@@ -98,7 +99,7 @@ void main(){
   vec3 col = vec3(0.004, 0.008, 0.022);
   col += vec3(0.06, 0.13, 0.36) * pow(fbm(uv * 1.3 + vec2(uTime * 0.008, 0.0)), 3.0);
   col += vec3(stars(uv + 3.0, 70.0)) * 0.7;
-  vec4 rg = ring(uv + m * 0.5);
+  vec4 rg = ring(uv + m * 0.5 + vec2(0.06, -0.08));   // up and left, clear of the manifesto's opening lines
   col *= 1.0 - rg.a * 0.92;
   col += rg.rgb;
   gLight = normalize(vec3(-0.65, 0.55, 0.35));          // light from the ring
@@ -109,64 +110,9 @@ void main(){
   col = mix(col, r.rgb, r.a);
   r = rocks(uv + m * 2.0, 4.5, 7.0, vec2(uTime * 0.03, -uScroll * 2.6), 0.85, px * 4.5 * 1.5, 0.72);
   col = mix(col, r.rgb, r.a);
-  r = rocks(uv + m * 4.0, 2.0, 13.0, vec2(uTime * 0.045, -uScroll * 4.2), 1.0, px * 2.0 * 2.5, 0.86);
+  r = rocks(uv + m * 4.0, 2.0, 13.0, vec2(uTime * 0.045, -uScroll * 4.2), 1.0, px * 2.0 * 1.5, 0.86);
   col = mix(col, r.rgb, r.a);
   col *= smoothstep(1.4, 0.25, length(uv * vec2(0.8, 1.0)));
-  gl_FragColor = finish(col);
-}`;
-
-/**
- * Pin 8 — a bipolar nebula: two blue lobes with copper rims meeting at a white core,
- * spiked foreground stars, a slow push-in.
- */
-export const bipolarNebulaFrag = /* glsl */ `
-${common}
-${finish}
-
-vec3 lobe(vec2 q, float seed){
-  float len = length(q);
-  vec2 dir = q / max(len, 1e-4);
-  float R = 0.19 * (0.8 + 0.35 * fbm(dir * 1.6 + seed));
-  float inside = smoothstep(R + 0.01, R - 0.08, len);
-  // clumpy gas inside, cut by dark dust lanes
-  float clump = fbm(q * 10.0 + seed + uTime * 0.01) * 0.6 + fbm(q * 22.0 - seed) * 0.4;
-  float dust = smoothstep(0.5, 0.72, fbm(q * 6.0 + seed * 2.0));
-  vec3 blue = mix(vec3(0.04, 0.2, 0.62), vec3(0.5, 0.85, 1.0), fbm(q * 4.0 + seed + 4.0));
-  vec3 c = blue * inside * (0.12 + 1.5 * clump * clump) * (1.0 - 0.75 * dust);
-  // copper rim made of filaments, with wisps trailing outside it
-  float fil = pow(fbm(dir * 8.0 + len * 20.0 + seed), 1.5);
-  c += vec3(1.0, 0.5, 0.22) * exp(-sq((len - R) / 0.018)) * (0.3 + 2.0 * fil);
-  c += vec3(0.95, 0.45, 0.2) * exp(-sq((len - R - 0.03) / 0.045)) * 0.4 * fbm(q * 14.0 + seed);
-  return c;
-}
-
-float spikes(vec2 p, float density){
-  vec2 g = p * density;
-  vec2 id = floor(g);
-  vec2 q = fract(g) - 0.5;
-  float h = hash(id + 17.0);
-  if (h < 0.93) return 0.0;
-  q -= (vec2(hash(id + 2.0), hash(id + 5.0)) - 0.5) * 0.5;
-  q /= density;
-  float b = (h - 0.93) * 14.0;
-  float core = exp(-dot(q, q) * 9e4);
-  float sp = exp(-abs(q.x) * 900.0) * exp(-abs(q.y) * 40.0) + exp(-abs(q.y) * 900.0) * exp(-abs(q.x) * 40.0);
-  return (core * 2.0 + sp * 0.8) * b;
-}
-
-void main(){
-  vec2 uv = screenUv();
-  float push = 1.0 + 0.12 * (0.5 - 0.5 * cos(uTime * 0.05));
-  vec2 p = rot(uv / push - vec2(0.08, -0.02) + uMouse * 0.015, 0.6 + uTime * 0.003);
-  vec3 col = vec3(0.004, 0.006, 0.016);
-  col += vec3(stars(uv + 1.0, 90.0)) * 0.6;
-  col += lobe(p - vec2(0.17, 0.0), 1.0);
-  col += lobe(p + vec2(0.17, 0.0), 9.0);
-  float core = length(p);
-  col += vec3(0.85, 0.92, 1.0) * (exp(-core * core / 0.0005) * 4.0 + exp(-core / 0.05) * 0.5);
-  col += vec3(0.9, 0.95, 1.0) * (exp(-abs(p.y) * 260.0) * exp(-abs(p.x) * 9.0) + exp(-abs(p.x) * 260.0) * exp(-abs(p.y) * 9.0)) * 0.5;   // core spikes
-  col += vec3(1.0, 0.95, 0.9) * spikes(uv * 0.98, 6.0);
-  col *= smoothstep(1.5, 0.3, length(uv));
   gl_FragColor = finish(col);
 }`;
 
@@ -325,3 +271,102 @@ export const nebulaFlightRestFrag = nebulaFlightFrag
   .replace("uniform vec3 uColA;", "const vec3 uColA = vec3(0.22, 0.32, 0.95);")
   .replace("uniform vec3 uColB;", "const vec3 uColB = vec3(0.85, 0.22, 0.55);")
   .replace("uniform float uBoost;", "const float uBoost = 0.0;");
+
+/**
+ * Journal index background: a long-exposure night sky. Every star draws a circular trail round the
+ * celestial pole (off the top-right corner), heads brighter than tails, slowly turning. One calm
+ * palette (ice-white and warm gold), dim enough to sit behind editorial type.
+ *   uFocus 0..1  a reader is hovering a story: the sky brightens a touch and turns a little faster
+ */
+export const starTrailsFrag = /* glsl */ `
+${common}
+${finish}
+uniform float uFocus;
+void main(){
+  vec2 uv = screenUv();
+  float px = 1.0 / min(uRes.x, uRes.y);
+  vec3 col = vec3(0.004, 0.005, 0.011);
+  col += vec3(0.05, 0.035, 0.02) * (1.0 - smoothstep(-0.6, 0.2, uv.y));  // faint warm sky glow low down
+  vec2 pole = vec2(1.0, 0.72);
+  vec2 d = uv - pole;
+  float r = length(d);
+  float a = atan(d.y, d.x);
+  float turn = uTime * (0.018 + 0.012 * uFocus);
+  const float RING = 0.0042;                                              // one trail per ring
+  float idx = floor(r / RING);
+  float h = hash(vec2(idx, 1.3));
+  if (h > 0.42) {
+    float fr = fract(r / RING) - 0.5;
+    float line = exp(-sq(fr * RING / (px * 0.75)));                       // ~1.5 px wide, anti-aliased
+    float L = 0.18 + 0.55 * hash(vec2(idx, 4.1));                         // trail length (radians)
+    float ph = hash(vec2(idx, 7.7)) * 6.2831 + turn;
+    float t = mod(a - ph, 6.2831);
+    float arc = step(t, L) * pow(t / L, 1.6);                             // the head is brightest
+    float head = exp(-sq((t - L) / 0.01)) * step(t, L + 0.03);
+    float bright = 0.12 + 0.9 * pow(hash(vec2(idx, 9.9)), 3.0);
+    vec3 tint = mix(vec3(0.72, 0.84, 1.0), vec3(1.0, 0.82, 0.58), step(0.7, hash(vec2(idx, 2.2))));
+    col += tint * line * (arc + head * 1.5) * bright * (0.55 + 0.35 * uFocus);
+  }
+  col += vec3(stars(uv * 0.9 + 2.0, 50.0)) * 0.25;
+  col *= 1.0 - smoothstep(0.35, 1.5, length(uv * vec2(0.85, 1.0)));
+  gl_FragColor = finish(col);
+}`;
+
+/**
+ * Closing call to action: sunrise seen from orbit. A real photograph of Earth (uEarth, Apollo 17)
+ * forms a huge curved horizon low in the frame; its night side stays dark, a thin atmosphere glows
+ * along the limb, and the sun climbs over the edge as the section scrolls in (uRise 0..1), throwing
+ * a soft fan of rays into the dark above the headline.
+ */
+export const dawnFrag = /* glsl */ `
+${common}
+${finish}
+uniform sampler2D uEarth;
+uniform float uRise;
+void main(){
+  vec2 uv = screenUv();
+  const float R = 2.1;
+  // the limb sits 0.2 above the bottom edge whatever the shape (on a tall phone section the centre
+  // would put the planet behind the form); on a landscape screen that is y = -0.3
+  float limbY = -0.5 * uRes.y / min(uRes.x, uRes.y) + 0.2 + 0.14 * clamp(uRes.y / uRes.x - 1.0, 0.0, 1.0);
+  vec2 c = vec2(0.0, limbY - R);
+  vec2 d = (uv - c) / R;
+  float r = length(d);
+  float h = (r - 1.0) * R;                             // height above the limb, in uv
+  vec2 sun = vec2(0.0, limbY + mix(-0.05, 0.03, uRise));
+  float sd = length(uv - sun);
+  float toward = exp(-sq(uv.x - sun.x) / 0.5);         // light gathers where the sun breaks through
+
+  // space: stars that fade as the dawn brightens
+  vec3 col = vec3(0.003, 0.004, 0.009);
+  col += vec3(stars(uv + 1.7, 60.0) * 0.7 + stars(uv * 1.6 + 4.0, 90.0) * 0.4) * (1.0 - 0.6 * uRise * toward);
+
+  float px = 1.0 / min(uRes.x, uRes.y);
+  float hs = max(h, 0.0);
+  // the atmosphere: a thin glowing shell, blue far from the sun, gold where it breaks through.
+  // Computed on both sides of the limb, so the planet's anti-aliased edge blends into it (no dark seam).
+  vec3 atm = mix(vec3(0.28, 0.52, 1.0), vec3(1.0, 0.68, 0.38), toward * 0.85);
+  // (wide enough to stay smooth at render scale: a sub-pixel band aliased into a dotted line)
+  col += atm * exp(-hs / max(0.016, 4.0 * px)) * (0.25 + 1.6 * toward * uRise);
+  col += atm * exp(-hs / 0.07) * 0.22 * (0.4 + toward * uRise);
+
+  if (h > 0.0) {
+    // the sun and its glow, only above the horizon
+    col += vec3(1.0, 0.97, 0.9) * 10.0 * exp(-sd * sd / 0.00035) * uRise;
+    col += vec3(1.0, 0.8, 0.52) * (0.9 * exp(-sd / 0.05) + 0.22 * exp(-sd / 0.28)) * (0.25 + 0.75 * uRise);
+    // a soft fan of rays climbing from the sun
+    float ang = atan(uv.x - sun.x, uv.y - sun.y);
+    float fan = pow(0.5 + 0.5 * sin(ang * 26.0 + 3.0 * noise(vec2(ang * 5.0, uTime * 0.08))), 5.0);
+    col += vec3(1.0, 0.82, 0.58) * fan * exp(-sd / 0.4) * 0.08 * uRise * smoothstep(-0.2, 0.6, uv.y + 0.3);
+  } else {
+    // the planet: the photograph, on its night side, with a thin lit crescent along the limb
+    // (sampled a little inside the photo's disc: its very edge is the transparent cut-out)
+    vec3 tx = texture2D(uEarth, d * 0.42 + 0.5).rgb;
+    float limb = smoothstep(-0.06, 0.0, h);
+    float lit = limb * limb * (0.06 + 0.8 * toward * uRise) + 0.022;
+    vec3 surf = tx * lit + vec3(0.2, 0.4, 0.9) * 0.07 * limb;
+    surf += vec3(1.0, 0.72, 0.4) * exp(h / 0.005) * toward * uRise * 0.7;   // the bright rim right at the edge
+    col = mix(col, surf, 1.0 - smoothstep(-2.0 * px, 0.0, h));           // anti-aliased edge against the glow
+  }
+  gl_FragColor = finish(col);
+}`;

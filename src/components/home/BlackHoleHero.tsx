@@ -2,17 +2,19 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import clsx from "clsx";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
 import { blackHoleFrag } from "@/components/gl/shaders";
 import { makeCodeTexture } from "@/components/gl/codeTexture";
+import { zoomNoiseTexture } from "@/components/gl/zoomShaders";
 
-const codeTextures = () => ({ uCode: makeCodeTexture() });
+const codeTextures = () => ({ uCode: makeCodeTexture(), uNoise: zoomNoiseTexture() });
 import { scrollToY, useExperience } from "@/lib/experience";
 import { ambient } from "@/lib/ambient";
 import { ButtonLink } from "@/components/ui/Button";
 
 const HOLD_MS = 1600;
-const POST = { threshold: 0.85, bloom: 0.42, streak: 0.22, aberration: 0.02, exposure: 1.05, grain: 0.03, vignette: 0.35 };
+const POST = { threshold: 0.9, bloom: 0.38, streak: 0.2, aberration: 0.005, exposure: 1.05, grain: 0.03, vignette: 0.35 };
 
 /** CSS stand-in for the shader (no WebGL / before it boots). */
 function CssBlackHole() {
@@ -29,7 +31,7 @@ function CssBlackHole() {
 
 function Chars({ text, className }: { text: string; className?: string }) {
   return (
-    <span className={`inline-block overflow-hidden pb-[0.08em] align-top ${className ?? ""}`}>
+    <span className={`inline-block pb-[0.08em] align-top ${className ?? ""}`}>
       {Array.from(text).map((ch, i) => (
         <span key={i} className="hero-anim ha-char inline-block will-change-transform">
           {ch}
@@ -55,12 +57,27 @@ export function BlackHoleHero() {
   const [p, setP] = useState(0);
   // cheaper ray-march on phones
   const [quality] = useState(() =>
-    typeof window !== "undefined" && window.innerWidth < 768 ? { scale: 0.42, steps: 70 } : { scale: 0.62, steps: 120 },
+    typeof window !== "undefined" && window.innerWidth < 768 ? { scale: 0.42, steps: 70 } : { scale: 0.7, steps: 120 },
   );
   const introDone = useExperience((s) => s.introDone);
   const lenis = useExperience((s) => s.lenis);
   // true until the headline lands: hides the site chrome (see [data-arriving] in globals.css)
   const [arriving, setArriving] = useState(true);
+  // the arrival waits for the shader's first frame, so it never starts unseen or behind a placeholder
+  const [glReady, setGlReady] = useState(false);
+  // read by the cursor loop (an effect without deps): no "click and hold" over the arrival
+  const arrivingRef = useRef(true);
+  useEffect(() => {
+    arrivingRef.current = arriving;
+  }, [arriving]);
+  const onGlReady = useCallback(() => setGlReady(true), []);
+  // nothing to draw once the fall has gone fully dark: frees the GPU for the manifesto behind
+  const glActive = useCallback(() => progress.current < 0.985, []);
+  useEffect(() => {
+    // no WebGL (or it failed): don't hold the page hostage, run the timeline on the CSS stand-in
+    const t = setTimeout(() => setGlReady(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
 
   // the arrival always plays on the hero: no scrolling until the headline has landed.
   // (overflow alone isn't enough: Lenis scrolls by script, so it has to be stopped too;
@@ -148,7 +165,7 @@ export function BlackHoleHero() {
 
   // entrance once the intro portal has opened: approach → hang at the edge → dive, then the headline lands
   useEffect(() => {
-    if (!introDone) return;
+    if (!introDone || !glReady) return;
     // start from the very top, whatever the browser restored or the wheel did during loading
     window.scrollTo(0, 0);
     useExperience.getState().lenis?.scrollTo(0, { immediate: true, force: true });
@@ -156,9 +173,9 @@ export function BlackHoleHero() {
     const ctx = gsap.context(() => {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const tl = gsap.timeline({ delay: 0.05 });
-      // scrolling (or a key) during the arrival doesn't leave it behind: it speeds it up instead
+      // scrolling (or a key) during the arrival doesn't leave it behind: it fast-forwards it
       hurry = () => {
-        if (tl.currentLabel() !== "land" && tl.timeScale() < 3) gsap.to(tl, { timeScale: 3, duration: 0.5, ease: "power2.out" });
+        if (tl.currentLabel() !== "land" && tl.timeScale() < 4) gsap.to(tl, { timeScale: 4, duration: 0.4, ease: "power2.out" });
       };
       const calm = () => {
         if (hurry) {
@@ -181,11 +198,11 @@ export function BlackHoleHero() {
         tl.fromTo(warp.current, { v: 1 }, { v: 0.66, duration: 2.2, ease: "power1.in" }, 0) // code pours into the hole
           .addLabel("whip")
           .call(() => ambient.thump(1), undefined, "whip")
-          .to(warp.current, { v: 0.5, duration: 0.6, ease: "power2.inOut" }) // the camera whips round to face it
+          .to(warp.current, { v: 0.5, duration: 0.7, ease: "sine.inOut" }) // the camera banks round to face it
           .to(warp.current, { v: 0.28, duration: 1.1, ease: "none" }) // light rays stream in
-          .to(warp.current, { v: 0.12, duration: 1.2, ease: "power1.out" }) // the fire vortex
+          .to(warp.current, { v: 0.12, duration: 1.2, ease: "sine.inOut" }) // the fire vortex
           .addLabel("settle")
-          .to(warp.current, { v: 0, duration: 1.0, ease: "power2.out" }) // flames clear onto the hero black hole
+          .to(warp.current, { v: 0, duration: 1.5, ease: "sine.inOut" }) // the fire fades as the disk returns: no pop
           .fromTo(
             rumble,
             { b: 0 },
@@ -193,16 +210,18 @@ export function BlackHoleHero() {
             "whip",
           )
           .to(rumble, { b: 0, duration: 1.4, ease: "power2.out", onUpdate: () => ambient.setBoost(rumble.b) }, "whip+=2.3")
-          .call(() => ambient.thump(0.45), undefined, "settle+=0.2")
-          .addLabel("land", "settle+=0.3")
-          // the header, announcement bar and sound toggle fade in with the headline, not before
-          .call(() => setArriving(false), undefined, "land+=0.4");
+          .call(() => ambient.thump(0.45), undefined, "settle+=0.4")
+          .addLabel("land", "settle+=0.7")
+          // the header, announcement bar and sound toggle fade in together with the top labels
+          .call(() => setArriving(false), undefined, "land+=0.3");
       }
       // the headline itself always lands at normal speed
       tl.call(calm, undefined, "land");
-      tl.fromTo(".ha-char", { opacity: 1, yPercent: 120, rotate: 8 }, { yPercent: 0, rotate: 0, duration: 1.6, ease: "expo.out", stagger: 0.07 }, "land")
-        .fromTo(".ha-top", { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.1 }, "land+=0.2")
-        .fromTo(".ha-sub", { opacity: 0, y: 24, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" }, "land+=0.55")
+      // whole letters rise and fade in together (a masked slide showed half-cut glyphs)
+      tl.fromTo(".ha-char", { opacity: 0, yPercent: 28 }, { opacity: 1, yPercent: 0, duration: 1.3, ease: "expo.out", stagger: 0.045 }, "land")
+        .fromTo(".ha-top", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" }, "land+=0.3")
+        // no filter animation here: blur on a text layer costs a frame right at the handoff
+        .fromTo(".ha-sub", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" }, "land+=0.55")
         .fromTo(".ha-cta", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.1 }, "land+=0.7")
         .fromTo(".ha-bottom", { opacity: 0 }, { opacity: 1, duration: 0.8 }, "land+=0.9")
         .fromTo(".ha-rail", { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: "expo.inOut" }, "land+=0.9");
@@ -216,7 +235,7 @@ export function BlackHoleHero() {
       }
       ctx.revert();
     };
-  }, [introDone]);
+  }, [introDone, glReady]);
 
   // Noomo-style "click and hold" cursor
   useEffect(() => {
@@ -240,7 +259,10 @@ export function BlackHoleHero() {
       pos.x += (pos.tx - pos.x) * k;
       pos.y += (pos.ty - pos.y) * k;
       hold = Math.max(0, Math.min(1, hold + (holding ? dt / HOLD_MS : -dt / 400)));
-      cur.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%) scale(${visible ? (holding ? 0.82 : 1) : 0})`;
+      // gone as soon as the fall starts: it must not follow you over the bridge line or into the manifesto
+      const show = visible && progress.current < 0.2 && !arrivingRef.current;
+      if (!show) holding = false;
+      cur.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%) scale(${show ? (holding ? 0.82 : 1) : 0})`;
       ring.current?.setAttribute("stroke-dashoffset", String(C * (1 - hold)));
       // only while the hold changes, so the arrival's rumble isn't overwritten every frame
       if (!fired && hold !== lastHold) {
@@ -305,28 +327,33 @@ export function BlackHoleHero() {
         data-arriving={arriving ? "true" : undefined}
         className="hold-stage sticky top-0 h-dvh touch-pan-y overflow-hidden bg-black select-none"
       >
-        <CssBlackHole />
+        {/* stand-in only if WebGL never comes up; otherwise the page waits on black for the first real frame */}
+        {glReady && !arriving && <CssBlackHole />}
         <ShaderCanvas
           frag={blackHoleFrag}
           uniforms={uniforms}
-          className="absolute inset-0"
+          className={clsx("absolute inset-0 transition-opacity duration-700", glReady ? "opacity-100" : "opacity-0")}
           scale={quality.scale}
           maxDpr={2}
           textures={codeTextures}
           post={POST}
+          onReady={onGlReady}
+          active={glActive}
         />
-        {/* soft fade so the headline always reads over the disk */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-black via-black/55 to-transparent" />
+        {/* soft fades so the labels and the headline always read over the disk */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-black/80 via-black/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black via-black/60 to-transparent" />
 
         {/* headline layer */}
         <div
           // top padding clears the announcement bar + header the hero now sits under
           className="relative z-10 mx-auto flex h-full max-w-7xl flex-col px-5 pt-32 pb-20 sm:px-8 sm:pt-36 sm:pb-24"
-          style={{ opacity: fadeOut, transform: `scale(${1 + p * 0.25})`, filter: `blur(${p * 10}px)` }}
+          // opacity and scale only: a blur filter on this full-screen layer was muddy and dropped frames
+          style={{ opacity: fadeOut, transform: `scale(${1 + p * 0.25})` }}
         >
-          <div className="flex items-start justify-between font-mono text-[11px] tracking-[0.18em] text-star/70 uppercase">
+          <div className="flex items-start justify-between font-mono text-[11px] tracking-[0.18em] text-star/85 uppercase [text-shadow:0_0_14px_rgb(0_0_0/0.95)]">
             <span className="hero-anim ha-top">
-              [ Bangalore ]<span className="hidden sm:inline"> · Plant wisdom, thoughtfully considered</span>
+              [ Bangalore ]<span className="hidden xl:inline"> · Plant wisdom, thoughtfully considered</span>
             </span>
             <span className="hero-anim ha-top hidden sm:block">Soft launch · Dec 2026</span>
           </div>
@@ -362,9 +389,17 @@ export function BlackHoleHero() {
           </div>
         </div>
 
-        {/* bridge line that appears as you fall in */}
-        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center px-6 text-center" style={{ opacity: bridge }}>
-          <p className="serif-display max-w-4xl text-4xl leading-tight sm:text-6xl lg:text-7xl" style={{ transform: `scale(${0.9 + bridge * 0.1})` }}>
+        {/* bridge line that appears as you fall in: centred on the hole's black shadow (11vmin above centre,
+            like the shader), over a soft dark halo, so it never sits on the bright disk */}
+        <div
+          className="pointer-events-none absolute inset-x-0 z-10 grid -translate-y-1/2 place-items-center px-6 text-center"
+          style={{ opacity: bridge, top: "calc(50% - 11vmin)" }}
+        >
+          <div className="absolute h-[18rem] w-[min(92vw,56rem)] rounded-[50%] bg-black/70 blur-3xl" />
+          <p
+            className="serif-display relative max-w-4xl text-4xl leading-tight [text-shadow:0_2px_24px_rgb(0_0_0/0.9)] sm:text-6xl lg:text-7xl"
+            style={{ transform: `scale(${0.9 + bridge * 0.1})` }}
+          >
             Past the event horizon,
             <br />
             <em className="text-flare-soft">the noise can&rsquo;t follow.</em>
@@ -374,18 +409,29 @@ export function BlackHoleHero() {
         {/* Noomo-style bottom bar */}
         <div className="hero-anim ha-bottom absolute inset-x-0 bottom-0 z-10 px-5 pb-6 sm:px-8">
           <div style={{ opacity: Math.max(0, 1 - Math.max(0, p - 0.7) * 4) }}>
-          <div className="mx-auto flex max-w-7xl items-end justify-between gap-6 font-mono text-[11px] leading-relaxed tracking-[0.16em] whitespace-nowrap uppercase text-star/85 sm:text-xs">
-            {/* indented on sm–xl so it clears the fixed sound toggle in the bottom-left corner */}
-            <span className="hidden sm:ml-28 sm:inline 2xl:ml-0">Are you ready to go beyond the everyday?</span>
+          <div className="mx-auto flex max-w-7xl items-end justify-between gap-6 font-mono text-[11px] leading-relaxed tracking-[0.16em] whitespace-nowrap text-star uppercase sm:text-xs">
+            {/* indented so it clears the fixed "Sound off" pill in the bottom-left corner */}
+            <span className="hidden sm:ml-44 sm:inline 2xl:ml-8">Are you ready to go beyond the everyday?</span>
             <span className="sm:hidden">Go beyond</span>
             <span className="pointer-coarse:hidden">Click and hold</span>
             <span className="hidden pointer-coarse:inline">Scroll</span>
           </div>
-          <div className="ha-rail mx-auto mt-3 h-[3px] max-w-7xl origin-left rounded-full bg-white/20">
+          <div className="ha-rail mx-auto mt-3 h-[2px] max-w-7xl origin-left rounded-full bg-white/30">
             <div className="h-full rounded-full bg-flare" style={{ width: `${p * 100}%` }} />
           </div>
           </div>
         </div>
+
+        {/* while the arrival plays: scrolling fast-forwards it, so say so */}
+        <p
+          className={clsx(
+            "pointer-events-none absolute inset-x-0 bottom-7 z-10 text-center font-mono text-[11px] tracking-[0.2em] text-star/70 uppercase transition-opacity duration-700",
+            arriving && glReady ? "opacity-100 delay-1000" : "opacity-0",
+          )}
+          aria-hidden
+        >
+          Scroll to skip
+        </p>
 
         {/* custom cursor */}
         <div
@@ -394,11 +440,11 @@ export function BlackHoleHero() {
           style={{ transform: "scale(0)" }}
           aria-hidden
         >
-          <div className="absolute inset-0 rounded-full border border-white/25 bg-white/10 backdrop-blur-md" />
+          <div className="absolute inset-0 rounded-full border border-white/35 bg-black/45 backdrop-blur-md" />
           <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
             <circle ref={ring} cx="50" cy="50" r="47" fill="none" stroke="var(--color-flare)" strokeWidth="3" strokeDasharray={2 * Math.PI * 47} strokeDashoffset={2 * Math.PI * 47} strokeLinecap="round" />
           </svg>
-          <span className="absolute inset-0 grid place-items-center text-center font-mono text-[9px] leading-tight tracking-[0.18em] uppercase">
+          <span className="absolute inset-0 grid place-items-center text-center font-mono text-[10px] leading-tight font-medium tracking-[0.16em] text-star uppercase">
             Click
             <br />
             and hold

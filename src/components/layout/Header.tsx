@@ -168,7 +168,10 @@ export function Header() {
         data-chrome
         className={clsx(
           "sticky top-0 z-40 transition-all duration-500 ease-cosmic",
-          scrolled && !menu ? "border-b border-line bg-space/80 backdrop-blur-xl" : "border-b border-transparent",
+          // scrolled: a soft fade rather than a flat band with a hard edge across the space scenes
+          scrolled && !menu
+            ? "bg-gradient-to-b from-space/90 via-space/55 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_bottom,#000_72%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_72%,transparent)]"
+            : "",
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:h-20 sm:px-8">

@@ -43,7 +43,8 @@ export function Manifesto() {
           opacity: 1,
           stagger: 0.08,
           ease: "none",
-          scrollTrigger: { trigger: el, start: "top 80%", end: "bottom 45%", scrub: true },
+          // fully lit as soon as the paragraph's last line is on screen: wherever people stop, it reads
+          scrollTrigger: { trigger: el, start: "top 90%", end: "bottom 92%", scrub: true },
         },
       );
     }, el);
@@ -51,19 +52,20 @@ export function Manifesto() {
   }, []);
 
   return (
-    // Merged with the hero: it slides up under the last 75vh of the fall through the event horizon,
-    // and its top 45vh is masked from transparent, so the asteroid field surfaces out of the darkness
-    // instead of meeting it at an edge. The text starts below the mask (pt-[52vh]) so it is never faded.
+    // Merged with the hero: it slides up under the last 75vh of the fall through the event horizon. Its top is
+    // masked (clear for 22vh, solid by 62vh) so the asteroid field surfaces only once the fall has gone dark,
+    // never as dark blobs over the bright disk. The text starts below the mask (pt-[64vh]) so it is never faded.
     <section
       ref={section}
-      className="relative isolate z-10 -mt-[75vh] overflow-hidden bg-black pt-[52vh] pb-32 [mask-image:linear-gradient(to_bottom,transparent,#000_45vh)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_45vh)] sm:pb-48"
+      className="relative isolate z-10 -mt-[75vh] overflow-hidden bg-black pt-[64vh] pb-32 [mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] sm:pb-48"
     >
       {/* an ice-blue black hole through a drifting asteroid field (reference pin 018017) */}
       <div className="absolute inset-0 -z-10">
         <ShaderCanvas frag={asteroidFieldFrag} uniforms={uniforms} scale={0.6} post={POST} />
       </div>
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/20 to-black" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_40%_55%,rgb(0_0_0/0.55),transparent_75%)]" />
+      {/* scrim under the paragraph so the ring and rocks never cut into the text */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_75%_55%_at_40%_62%,rgb(0_0_0/0.75),transparent_78%)]" />
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <p className="bracket mb-10 text-flare-soft">[ Manifesto ]</p>
         <p ref={ref} className="display text-4xl leading-[1.08] sm:text-6xl lg:text-7xl">

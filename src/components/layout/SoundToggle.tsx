@@ -32,7 +32,7 @@ export function SoundToggle({ className, label = true }: { className?: string; l
           />
         ))}
       </span>
-      {label && <span>{sound ? "On" : "Off"}</span>}
+      {label && <span>{sound ? "Sound on" : "Sound off"}</span>}
     </button>
   );
 }

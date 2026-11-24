@@ -3,121 +3,44 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { articles, type Article } from "@/lib/data";
+import { articles } from "@/lib/data";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
-import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
-import { nebulaFlightFrag } from "@/components/gl/sectionShaders";
+import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
+import { starTrailsFrag } from "@/components/gl/sectionShaders";
 import { Planet } from "@/components/space/Planet";
-import { TAG_PLANET, formatDate } from "@/components/journal/ArticleCard";
+import { ArticleCover, TAG_PLANET, formatDate } from "@/components/journal/ArticleCard";
 
-type RGB = [number, number, number];
-
-// the nebula's colours: Ascension's blue/magenta at rest, retinted for the article in view
-const PALETTE: Record<Article["tag"] | "rest", [RGB, RGB]> = {
-  rest: [
-    [0.22, 0.32, 0.95],
-    [0.85, 0.22, 0.55],
-  ],
-  Science: [
-    [0.2, 0.45, 1.0],
-    [0.25, 0.85, 0.9],
-  ],
-  Wellbeing: [
-    [0.55, 0.25, 0.95],
-    [0.95, 0.3, 0.55],
-  ],
-  Culture: [
-    [0.95, 0.55, 0.2],
-    [0.75, 0.25, 0.35],
-  ],
-};
-
-const POST = { threshold: 0.7, bloom: 0.5, streak: 0.08, aberration: 0.01, exposure: 1.1, grain: 0.035, vignette: 0.3 };
+const POST: PostSettings = { threshold: 0.8, bloom: 0.35, streak: 0.05, aberration: 0.004, exposure: 1.0, grain: 0.03, vignette: 0.25 };
 
 /**
- * "Ideas worth exploring" as an editorial index, not cards. A slow flight through nebula clouds
- * sits behind (reference pin 880313058437018080, "Ascension"); hovering an article lifts its
- * planet as a glowing orb that follows the cursor behind the type (Klick reference) and retints
- * the nebula to match.
+ * "Ideas worth exploring" as an editorial index. Behind it, a calm long-exposure night sky of star
+ * trails (one steady palette: it never retints). Beside the list, the hovered story's real magazine
+ * cover, which crossfades from one issue to the next, so the hover shows something useful and
+ * nothing ever floats over the titles.
  */
 export function JournalTeaser() {
-  const section = useRef<HTMLElement>(null);
-  const orb = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
   const hoverRef = useRef<number | null>(null);
-  const col = useRef<{ a: RGB; b: RGB; boost: number }>({ a: [...PALETTE.rest[0]], b: [...PALETTE.rest[1]], boost: 0 });
+  const focus = useRef(0);
 
   useEffect(() => {
     hoverRef.current = hover;
   }, [hover]);
 
-  // nebula colours ease toward the hovered article's palette every frame
   const uniforms = useCallback(() => {
-    const h = hoverRef.current;
-    const [ta, tb] = h === null ? PALETTE.rest : PALETTE[articles[h].tag];
-    const c = col.current;
-    for (let i = 0; i < 3; i++) {
-      c.a[i] += (ta[i] - c.a[i]) * 0.04;
-      c.b[i] += (tb[i] - c.b[i]) * 0.04;
-    }
-    c.boost += ((h === null ? 0 : 1) - c.boost) * 0.04;
-    return { uColA: [...c.a] as RGB, uColB: [...c.b] as RGB, uBoost: c.boost };
+    focus.current += ((hoverRef.current === null ? 0 : 1) - focus.current) * 0.04;
+    return { uFocus: focus.current };
   }, []);
 
-  // the orb trails the cursor with a soft lag
-  useEffect(() => {
-    const el = section.current;
-    const o = orb.current;
-    if (!el || !o || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    const p = { x: 0, y: 0, tx: 0, ty: 0 };
-    let raf = 0;
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      p.tx = e.clientX - r.left;
-      p.ty = e.clientY - r.top;
-    };
-    const loop = () => {
-      p.x += (p.tx - p.x) * 0.09;
-      p.y += (p.ty - p.y) * 0.09;
-      o.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) translate(-50%, -50%)`;
-      raf = requestAnimationFrame(loop);
-    };
-    el.addEventListener("pointermove", move);
-    raf = requestAnimationFrame(loop);
-    return () => {
-      el.removeEventListener("pointermove", move);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  const shown = hover ?? 0;
 
   return (
-    <section ref={section} className="relative isolate overflow-hidden py-28 sm:py-36" onPointerLeave={() => setHover(null)}>
-      {/* the nebula flight */}
+    <section className="relative isolate overflow-hidden py-28 sm:py-36" onPointerLeave={() => setHover(null)}>
       <div className="absolute inset-0 -z-20" aria-hidden>
-        <ShaderCanvas frag={nebulaFlightFrag} uniforms={uniforms} scale={0.5} post={POST} />
+        <ShaderCanvas frag={starTrailsFrag} uniforms={uniforms} scale={0.75} maxDpr={1.75} post={POST} />
       </div>
-      <div className="absolute inset-0 -z-20 bg-gradient-to-b from-space via-space/25 to-space" aria-hidden />
-
-      {/* the hovered article's planet, glowing behind the type */}
-      <div
-        ref={orb}
-        className="pointer-events-none absolute top-0 left-0 -z-10 hidden w-[min(34vw,440px)] pointer-fine:block"
-        aria-hidden
-      >
-        {articles.map((a, i) => (
-          <div
-            key={a.slug}
-            className={clsx(
-              "absolute inset-0 transition-[opacity,transform,filter] duration-700 ease-cosmic",
-              hover === i ? "scale-100 opacity-90 blur-0" : "scale-75 opacity-0 blur-md",
-            )}
-          >
-            <Planet name={TAG_PLANET[a.tag].planet} shade="soft" glow={TAG_PLANET[a.tag].glow} className="w-full" sizes="440px" eager />
-          </div>
-        ))}
-        <div className="aspect-square" />
-      </div>
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-space via-space/10 to-space" aria-hidden />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-end">
@@ -132,42 +55,65 @@ export function JournalTeaser() {
           </ButtonLink>
         </div>
 
-        {/* the index */}
-        <ol className="mt-16 border-b border-line">
-          {articles.map((a, i) => (
-            <li key={a.slug} onPointerEnter={() => setHover(i)}>
-              <Reveal delay={i * 120}>
-                <Link
-                  href={`/journal/${a.slug}`}
-                  onFocus={() => setHover(i)}
-                  onBlur={() => setHover(null)}
+        <div className="mt-16 grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_23rem]">
+          {/* the index */}
+          <ol className="border-b border-line">
+            {articles.map((a, i) => (
+              <li key={a.slug} onPointerEnter={() => setHover(i)}>
+                <Reveal delay={i * 120}>
+                  <Link
+                    href={`/journal/${a.slug}`}
+                    onFocus={() => setHover(i)}
+                    onBlur={() => setHover(null)}
+                    className={clsx(
+                      "group grid grid-cols-[auto_1fr_auto] items-start gap-x-5 border-t border-line py-8 transition-opacity duration-500 sm:gap-x-10 sm:py-10",
+                      hover !== null && hover !== i && "opacity-45",
+                    )}
+                  >
+                    <span className="pt-2 font-mono text-xs tracking-[0.18em] text-flare-soft sm:pt-3">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="min-w-0">
+                      <span className="bracket block text-dust">
+                        [ {a.tag} ] {formatDate(a.date)} · {a.minutes} min
+                      </span>
+                      <span className="display mt-3 block text-[2.1rem] leading-[1.02] transition-transform duration-700 ease-cosmic group-hover:translate-x-2 sm:text-5xl xl:text-6xl">
+                        {a.title}
+                      </span>
+                      <span className="mt-4 block max-w-xl text-sm leading-relaxed text-star/70 sm:text-base">{a.excerpt}</span>
+                    </span>
+                    <span className="flex flex-col items-end gap-4 pt-1">
+                      <span className="grid h-12 w-12 place-items-center rounded-full border border-line transition-[transform,background-color,border-color,color] duration-500 group-hover:-rotate-45 group-hover:border-flare group-hover:bg-flare group-hover:text-space">
+                        <span aria-hidden>→</span>
+                      </span>
+                      {/* no preview panel below lg: a small planet marks each story instead */}
+                      <Planet name={TAG_PLANET[a.tag].planet} shade="soft" className="w-11 lg:hidden" sizes="44px" />
+                    </span>
+                  </Link>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+
+          {/* the hovered story's cover (the first one at rest) */}
+          <div className="sticky top-28 hidden lg:block" aria-hidden>
+            <div data-tilt className="relative aspect-[3/4] [transform-style:preserve-3d]">
+              <div className="absolute -inset-10 rounded-full bg-[radial-gradient(closest-side,rgb(var(--accent-rgb)/0.18),transparent)] blur-2xl" />
+              {articles.map((a, i) => (
+                <div
+                  key={a.slug}
                   className={clsx(
-                    "group grid grid-cols-[auto_1fr_auto] items-start gap-x-5 border-t border-line py-8 transition-opacity duration-500 sm:gap-x-10 sm:py-11",
-                    hover !== null && hover !== i && "opacity-35",
+                    "absolute inset-0 transition-[opacity,transform] duration-700 ease-cosmic",
+                    shown === i ? "translate-y-0 scale-100 opacity-100" : "translate-y-3 scale-[0.98] opacity-0",
                   )}
                 >
-                  <span className="pt-2 font-mono text-xs tracking-[0.18em] text-flare-soft sm:pt-4">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="min-w-0">
-                    <span className="bracket block text-dust">
-                      [ {a.tag} ] {formatDate(a.date)} · {a.minutes} min
-                    </span>
-                    <span className="display mt-3 block text-[2.1rem] leading-[1.02] transition-transform duration-700 ease-cosmic group-hover:translate-x-3 sm:text-6xl lg:text-7xl">
-                      {a.title}
-                    </span>
-                    <span className="mt-4 block max-w-xl text-sm leading-relaxed text-star/70 sm:text-base">{a.excerpt}</span>
-                  </span>
-                  {/* touch screens have no hover orb: a small planet marks each story instead */}
-                  <span className="flex flex-col items-end gap-4 pt-1">
-                    <span className="grid h-12 w-12 place-items-center rounded-full border border-line transition-[transform,background-color,border-color] duration-500 group-hover:-rotate-45 group-hover:border-flare group-hover:bg-flare group-hover:text-space sm:h-14 sm:w-14">
-                      <span aria-hidden>→</span>
-                    </span>
-                    <Planet name={TAG_PLANET[a.tag].planet} shade="soft" className="w-12 pointer-fine:hidden" sizes="48px" />
-                  </span>
-                </Link>
-              </Reveal>
-            </li>
-          ))}
-        </ol>
+                  <ArticleCover article={a} className="h-full rounded-[22px] border border-line shadow-[0_40px_80px_-30px_rgb(0_0_0/0.9)]" />
+                </div>
+              ))}
+            </div>
+            <p className="bracket mt-5 text-dust">
+              Issue {String(shown + 1).padStart(2, "0")} · {articles[shown].minutes} min read
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -98,6 +98,8 @@ export function ShaderCanvas({
   scale = 1,
   textures,
   post,
+  onReady,
+  active,
 }: {
   frag: string;
   uniforms?: () => Uniforms;
@@ -108,12 +110,20 @@ export function ShaderCanvas({
   /** render resolution multiplier (0.5 = half-res, cheaper) */
   scale?: number;
   post?: PostSettings;
+  /** called once, after the first frame has actually reached the screen */
+  onReady?: () => void;
+  /** read every frame: return false to skip drawing (e.g. while the scene is fully dark) */
+  active?: () => boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const uniformsRef = useRef(uniforms);
+  const readyRef = useRef(onReady);
+  const activeRef = useRef(active);
   useEffect(() => {
     uniformsRef.current = uniforms;
-  }, [uniforms]);
+    readyRef.current = onReady;
+    activeRef.current = active;
+  }, [uniforms, onReady, active]);
   const postKey = post ? JSON.stringify(post) : "";
 
   useEffect(() => {
@@ -382,14 +392,23 @@ export function ShaderCanvas({
     const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
     io.observe(canvas);
 
+    // the first frame is the slow one (shader compile, texture upload): report ready only once it is on screen
+    let frames = 0;
     const loop = (now: number) => {
-      if (visible) draw(now);
+      if (visible && activeRef.current?.() !== false) {
+        draw(now);
+        frames += 1;
+        if (frames === 2) readyRef.current?.();
+      }
       raf = requestAnimationFrame(loop);
     };
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     resize();
-    if (reduced) draw(performance.now());
+    if (reduced) {
+      draw(performance.now());
+      readyRef.current?.();
+    }
     else raf = requestAnimationFrame(loop);
 
     return () => {
