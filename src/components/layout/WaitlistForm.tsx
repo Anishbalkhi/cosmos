@@ -31,7 +31,7 @@ export function WaitlistForm({ className, size = "md" }: { className?: string; s
       <div
         className={clsx(
           "flex items-center gap-2 rounded-full border bg-space-2/80 p-1.5 pl-5 backdrop-blur transition-colors focus-within:border-flare",
-          state === "error" ? "border-red-400" : "border-line",
+          state === "error" ? "border-red-400" : "border-white/20 hover:border-white/35",
         )}
       >
         <label htmlFor={inputId} className="sr-only">
@@ -48,10 +48,11 @@ export function WaitlistForm({ className, size = "md" }: { className?: string; s
             setEmail(e.target.value);
             setState("idle");
           }}
-          className={clsx("min-w-0 flex-1 bg-transparent outline-none placeholder:text-dust/70", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}
+          className={clsx("min-w-0 flex-1 bg-transparent outline-none placeholder:text-star/55", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}
         />
         <button
           type="submit"
+          data-sfx="press"
           className={clsx(
             "shrink-0 rounded-full bg-flare font-semibold text-space transition-colors hover:bg-flare-soft",
             size === "lg" ? "h-12 px-6 text-sm" : "h-10 px-5 text-xs",

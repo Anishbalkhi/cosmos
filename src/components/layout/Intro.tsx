@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { Wordmark } from "@/components/brand/Wordmark";
 import { LeafStar } from "@/components/brand/LeafStar";
 import { AGE_KEY, SEEN_KEY, introNeeded, useExperience } from "@/lib/experience";
 import { ambient } from "@/lib/ambient";
@@ -13,7 +12,6 @@ if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
   (window as Window & { __gsap?: typeof gsap }).__gsap = gsap;
 }
 
-const noop = () => () => {};
 type Phase = "loading" | "start" | "portal" | "denied";
 
 /**
@@ -24,8 +22,6 @@ type Phase = "loading" | "start" | "portal" | "denied";
  *     black hole behind, grows until it swallows the screen, the site appears.
  */
 export function Intro() {
-  // rendered on the server too; a <head> script hides it for returning visitors before paint
-  const needed = useSyncExternalStore(noop, introNeeded, () => true);
   const [gone, setGone] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [pct, setPct] = useState(0);
@@ -33,11 +29,9 @@ export function Intro() {
   const setIntroDone = useExperience((s) => s.setIntroDone);
   const setBoost = useExperience((s) => s.setBoost);
   const setPortal = useExperience((s) => s.setPortal);
-  const show = needed && !gone;
-
-  useEffect(() => {
-    if (!needed) setIntroDone(true);
-  }, [needed, setIntroDone]);
+  // the loading bar shows on every full page load (it also covers the black hole's shader compile);
+  // returning visitors skip the age check and the portal: the curtain just fades away
+  const show = !gone;
 
   useEffect(() => {
     document.documentElement.style.overflow = show ? "hidden" : "";
@@ -56,28 +50,70 @@ export function Intro() {
     const o = { v: 0 };
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
-      tl.from(".in-load > *", { yPercent: 110, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.08 })
-        .to(o, {
-          v: 100,
-          duration: reduced ? 0.3 : 2.2,
-          ease: "power2.inOut",
+      // the first 90% runs on a clock; the last 10% waits until the fonts and the page have really loaded
+      // on the home page it also waits for the black hole's first frame (at most 6 s), so the arrival never
+      // starts on a black screen
+      const hero = !!document.querySelector(".hold-stage");
+      const heroReady = new Promise<void>((r) => {
+        if (!hero || useExperience.getState().heroReady) return r();
+        const t = setTimeout(r, 6000);
+        const off = useExperience.subscribe((st) => {
+          if (st.heroReady) {
+            clearTimeout(t);
+            off();
+            r();
+          }
+        });
+      });
+      const ready = Promise.all([
+        document.fonts?.ready ?? Promise.resolve(),
+        document.readyState === "complete" ? Promise.resolve() : new Promise((r) => window.addEventListener("load", r, { once: true })),
+        heroReady,
+      ]);
+      // no fade-in: the bar is in the server HTML and stays visible from the first paint, even if the page is busy
+      // (a fade from opacity 0 left a black screen whenever setting up the 3D scenes held the main thread)
+      tl.to(o, {
+          v: 90,
+          duration: reduced ? 0.3 : 1.6,
+          ease: "power2.out",
           onUpdate: () => setPct(Math.round(o.v)),
         }, 0.2)
+        .add(() => {
+          tl.pause();
+          void ready.then(() => tl.resume());
+        })
+        .to(o, { v: 100, duration: reduced ? 0.1 : 0.45, ease: "power2.inOut", onUpdate: () => setPct(Math.round(o.v)) })
         .add(() => {}, "+=0.25")
         .add(() => {
           document.fonts?.ready.then(() =>
             gsap.to(".in-load > *", {
-              yPercent: -110,
+              y: -24,
               opacity: 0,
               duration: 0.6,
               ease: "expo.in",
               stagger: 0.05,
-              onComplete: () => setPhase("start"),
+              onComplete: () => {
+                // read now, not at first render (that one is the server's guess, which is always "first visit")
+                if (introNeeded()) return setPhase("start");
+                // returning visitor: no age check, no portal; the curtain fades and the arrival starts
+                gsap.to(root.current, {
+                  opacity: 0,
+                  duration: 0.6,
+                  ease: "power2.out",
+                  // the arrival waits on its first frame behind the fade and starts once the curtain is gone
+                  onComplete: () => {
+                    setIntroDone(true);
+                    setGone(true);
+                  },
+                });
+              },
             }),
           );
         });
     }, root);
     return () => ctx.revert();
+    // setIntroDone is a stable store action
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   // 2. start screen enters
@@ -108,9 +144,8 @@ export function Intro() {
     el.style.setProperty("--cx", `${cx}px`);
     el.style.setProperty("--cy", `${cy}px`);
     setPortal({ x: cx, y: cy });
-    // big enough on phones for the wordmark, which is sized to fit inside it
+    // the first opening: a window onto the arrival, already moving behind it
     const small = Math.min(220, Math.max(110, Math.min(w, h) * 0.26));
-    el.style.setProperty("--mark", `${small * 0.27}px`);
     const full = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) + 40;
 
     const tl = gsap.timeline({
@@ -130,21 +165,19 @@ export function Intro() {
       .to(".in-word-r", { xPercent: 60, opacity: 0, filter: "blur(12px)", duration: 0.7, ease: "power3.in" }, 0)
       .to(".in-corner", { scale: 0, opacity: 0, duration: 0.4, ease: "power2.in" }, 0)
       .to(".in-legal, .in-sound", { opacity: 0, y: 10, duration: 0.4 }, 0)
-      .to(".in-start", { scale: 0.08, duration: 0.7, ease: "expo.in" }, 0.05)
-      .set(".in-start", { opacity: 0 })
+      // the button sinks into the portal as it opens round it: never a black screen with a speck
+      .to(".in-start", { scale: 0.55, opacity: 0, duration: 0.45, ease: "power2.in" }, 0.05)
       .add(() => {
         setBoost(1);
         ambient.whoosh();
         // the arrival starts now, so it is already moving inside the portal as it opens
         // (no frozen ring); the intro itself unmounts when the portal has swallowed the screen
         setIntroDone(true);
-      })
-      .fromTo(el, { "--r": "0px" }, { "--r": `${small}px`, duration: 1, ease: "expo.out" })
-      .fromTo(".in-ring", { opacity: 0 }, { opacity: 1, duration: 0.6 }, "<")
-      .fromTo(".in-mark", { opacity: 0, scale: 0.85, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1, ease: "expo.out" }, "<0.1")
-      .to({}, { duration: 0.2 })
+      }, 0.2)
+      .fromTo(el, { "--r": `${b.width * 0.3}px` }, { "--r": `${small}px`, duration: 0.9, ease: "expo.out" }, 0.2)
+      .fromTo(".in-ring", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.2)
+      .to({}, { duration: 0.15 })
       .to(el, { "--r": `${full}px`, duration: 1.4, ease: "expo.inOut" })
-      .to(".in-mark", { scale: 2.2, opacity: 0, filter: "blur(16px)", duration: 1.2, ease: "expo.in" }, "<")
       .to(".in-ring", { opacity: 0, duration: 0.8 }, "<0.5");
   }
 
@@ -154,7 +187,7 @@ export function Intro() {
     <div
       ref={root}
       className="intro-root fixed inset-0 z-[100]"
-      style={{ "--r": "0px", "--cx": "50%", "--cy": "50%", "--mark": "40px" } as React.CSSProperties}
+      style={{ "--r": "0px", "--cx": "50%", "--cy": "50%" } as React.CSSProperties}
     >
       {/* glowing rim of the portal (photon ring), centred where START collapsed */}
       <div
@@ -168,13 +201,6 @@ export function Intro() {
           boxShadow: "0 0 0 1.5px #fff3e4, 0 0 40px 6px rgb(var(--accent-rgb) / 0.75), inset 0 0 30px 4px rgb(var(--accent-soft-rgb) / 0.55)",
         }}
       />
-      {/* wordmark floating in the portal, sized (--mark) to fit inside it */}
-      <div
-        className="in-mark pointer-events-none absolute z-10 opacity-0"
-        style={{ left: "var(--cx)", top: "var(--cy)", translate: "-50% -50%", fontSize: "var(--mark)" }}
-      >
-        <Wordmark className="drop-shadow-[0_0_24px_rgba(0,0,0,0.95)]" />
-      </div>
 
       {/* the curtain, with a growing hole cut out where START was */}
       <div
@@ -203,16 +229,16 @@ export function Intro() {
               {/* flex-1 only in the row layout: in the phone column it would zero the track's height */}
               <div className="relative h-10 w-full shrink-0 rounded-full border border-star/60 sm:h-[3.4vw] sm:w-auto sm:flex-1">
                 <div className="absolute inset-y-0 right-[1.4%] left-[1.4%]">
-                <span
-                  className="absolute top-1/2 aspect-square h-[76%] rounded-full"
-                  style={{
-                    left: `${pct}%`,
-                    transform: `translate(-${pct}%, -50%)`,
-                    // a real Jupiter (Hubble, public domain) travels the track
-                    background: "url(/planets/jupiter.webp) center / cover no-repeat",
-                    boxShadow: "0 0 30px rgb(var(--accent-rgb) / 0.55)",
-                  }}
-                />
+                  <span
+                    className="absolute top-1/2 aspect-square h-[76%] rounded-full"
+                    style={{
+                      left: `${pct}%`,
+                      transform: `translate(-${pct}%, -50%)`,
+                      // a real Jupiter (Hubble, public domain) travels the track
+                      background: "url(/planets/jupiter.webp) center / cover no-repeat",
+                      boxShadow: "0 0 30px rgb(var(--accent-rgb) / 0.55)",
+                    }}
+                  />
                 </div>
               </div>
               <span className="font-wide w-[3.2em] text-center text-[11vw] leading-none tabular-nums sm:text-right sm:text-[4.6vw]">
@@ -226,7 +252,7 @@ export function Intro() {
             <>
               {/* symmetric 3-column grid: START sits at the exact horizontal centre, whatever the word widths */}
               <div className="flex w-full flex-col items-center gap-6 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-[2.5vw]">
-                <span className="in-word-l font-wide text-[12vw] leading-none sm:justify-self-end sm:text-[5.2vw]">Enter</span>
+                <span className="in-word-l serif-display text-[17vw] leading-none sm:justify-self-end sm:text-[7vw]">Enter</span>
                 <div className="relative">
                   {["-top-3 -left-3 border-t border-l", "-top-3 -right-3 border-t border-r", "-bottom-3 -left-3 border-b border-l", "-bottom-3 -right-3 border-b border-r"].map((c) => (
                     <span key={c} className={`in-corner absolute h-3 w-3 border-star/80 ${c}`} />
@@ -236,22 +262,19 @@ export function Intro() {
                     onClick={start}
                     disabled={phase !== "start"}
                     // GSAP scales this button; the hover scale lives on the inner face so CSS transitions never fight it
-                    className="in-start group relative grid aspect-square w-28 max-w-36 place-items-center rounded-full text-space outline-offset-4 sm:w-[11vw]"
+                    className="in-start group relative grid aspect-square w-24 max-w-28 place-items-center rounded-full text-space outline-offset-4 sm:w-[6vw] sm:min-w-24"
                     aria-label="Start. By entering you confirm you are 18 or older."
                   >
                     <span className="absolute inset-0 animate-ping rounded-full bg-star/30 [animation-duration:2.4s]" />
                     <span className="absolute inset-0 rounded-full bg-star transition-transform duration-500 ease-cosmic group-hover:scale-110 group-focus-visible:scale-110" />
-                    <span className="relative font-mono text-xs tracking-[0.2em] uppercase">Start</span>
+                    <span className="relative font-mono text-xs font-medium tracking-[0.22em] uppercase">Start</span>
                   </button>
                 </div>
-                <span className="in-word-r font-wide flex items-center gap-[1.4vw] text-[12vw] leading-none sm:justify-self-start sm:text-[5.2vw]">
-                  COSMOS
-                  <svg viewBox="0 0 24 24" className="h-[0.6em] w-[0.6em]" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-                    <path d="M3 12h17M14 5l7 7-7 7" />
-                  </svg>
+                <span className="in-word-r serif-display text-[17vw] leading-none sm:justify-self-start sm:text-[7vw]">
+                  the <em className="text-flare-soft">Cosmos</em>
                 </span>
               </div>
-              <p className="in-legal mt-10 text-center text-xs text-dust">
+              <p className="in-legal mt-12 text-center text-sm text-star/70">
                 By entering you confirm you are 18 or older.{" "}
                 <button className="underline underline-offset-4 hover:text-star" onClick={() => setPhase("denied")} disabled={phase !== "start"}>
                   I&rsquo;m under 18
@@ -262,7 +285,7 @@ export function Intro() {
 
           {phase === "denied" && (
             <div className="text-center">
-              <p className="font-wide text-[10vw] leading-none sm:text-[5vw]">Not yet.</p>
+              <p className="serif-display text-[14vw] leading-none sm:text-[6vw]">Not yet.</p>
               <p className="mt-6 text-dust">Cosmos is only for adults aged 18 and over. See you in a few orbits.</p>
             </div>
           )}

@@ -12,6 +12,7 @@ import { introSkipScript } from "@/lib/experience";
 import { SoundToggle } from "@/components/layout/SoundToggle";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
+import { SfxListener } from "@/components/layout/SfxListener";
 
 /* Type system (cinematic gold-space theme), three families plus the logo:
    Instrument Serif – headlines and the gold italic accents · Geist – body and interface
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <MotionLayer />
         </Suspense>
         <SmoothScroll />
+        <SfxListener />
       </body>
     </html>
   );

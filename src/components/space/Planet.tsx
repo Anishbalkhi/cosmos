@@ -5,7 +5,8 @@ import clsx from "clsx";
  * Real planet photographs (public domain, NASA missions), stored in /public/planets:
  *  sun – NASA SDO/AIA · earth – Apollo 17 · moon – NASA LRO · mars – NASA/USGS Viking
  *  jupiter – NASA/ESA Hubble · saturn – NASA Cassini · neptune – NASA Voyager 2
- * Round discs are cut out with a transparent background; Saturn keeps its black sky.
+ * Every image has a transparent background (Saturn's black sky was keyed out, so it needs no blend
+ * mode, which broke inside pinned stages); the discs are trimmed inside the photographs' dark rims.
  */
 export type PlanetName = "sun" | "earth" | "moon" | "mars" | "jupiter" | "saturn" | "neptune";
 
@@ -52,7 +53,7 @@ export function Planet({
         sizes={sizes}
         priority={priority}
         loading={priority ? undefined : eager ? "eager" : undefined}
-        className={clsx("object-contain", wide && "mix-blend-screen")}
+        className="object-contain"
       />
       {shade !== "none" && !wide && (
         <div

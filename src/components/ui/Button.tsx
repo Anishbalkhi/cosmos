@@ -10,7 +10,7 @@ const base =
 const variants: Record<Variant, string> = {
   primary:
     "bg-flare text-space hover:bg-flare-soft shadow-[0_0_0_0_rgb(var(--accent-rgb)/0.5)] hover:shadow-[0_0_40px_4px_rgb(var(--accent-rgb)/0.35)]",
-  ghost: "border border-line text-star hover:border-star/40 hover:bg-white/5",
+  ghost: "border border-star/25 text-star hover:border-star/50 hover:bg-white/5",
   light: "bg-star text-space hover:bg-white",
 };
 
@@ -36,7 +36,7 @@ export function ButtonLink({
   className?: string;
 }) {
   return (
-    <Link href={href} data-magnetic className={clsx(base, variants[variant], className)}>
+    <Link href={href} data-magnetic data-sfx="press" className={clsx(base, variants[variant], className)}>
       {children}
       {arrow && <Arrow />}
     </Link>
@@ -51,7 +51,7 @@ export function Button({
   ...props
 }: ComponentProps<"button"> & { variant?: Variant; arrow?: boolean }) {
   return (
-    <button data-magnetic className={clsx(base, variants[variant], className)} {...props}>
+    <button data-magnetic data-sfx="press" className={clsx(base, variants[variant], className)} {...props}>
       {children}
       {arrow && <Arrow />}
     </button>

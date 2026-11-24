@@ -222,6 +222,15 @@ void main(){
 }`;
 
 /**
+ * The Milky Way as a layer over the home page's shared sky: the same image, but its dark parts are
+ * transparent (light only adds), so the sky and its light object show through between the stars.
+ */
+export const milkyWayOverFrag = milkyWayFrag.replace(
+  "gl_FragColor = finish(col);",
+  "vec4 fc = finish(col); vec3 c = clamp(fc.rgb, 0.0, 1.0); float a = clamp(max(c.r, max(c.g, c.b)) * 1.6, 0.0, 1.0); gl_FragColor = vec4(c / max(a, 1e-3), a);",
+);
+
+/**
  * Pin 880313058437018080 ("Ascension") — an endless slow glide forward through nebula clouds.
  * Five cloud layers at different depths each drift toward the camera and fade in and out, so
  * the flight never loops visibly. The two palette colours are uniforms, so the journal can

@@ -9,7 +9,7 @@ import { asteroidFieldFrag } from "@/components/gl/sectionShaders";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const POST = { threshold: 0.8, bloom: 0.5, streak: 0.18, aberration: 0.015, exposure: 1.1, grain: 0.03, vignette: 0.25 };
+const POST = { threshold: 0.8, bloom: 0.5, streak: 0.18, aberration: 0, exposure: 1.1, grain: 0.03, vignette: 0.25 };
 
 const TEXT =
   "We started Cosmos to end the whispering. Cannabis wellness deserves daylight, design and rigour, not stigma. So every gummy is lab-tested, precisely dosed and clearly labelled — the care of a fine pharmacy, the taste of a maison.";
@@ -57,13 +57,14 @@ export function Manifesto() {
     // never as dark blobs over the bright disk. The text starts below the mask (pt-[64vh]) so it is never faded.
     <section
       ref={section}
-      className="relative isolate z-10 -mt-[75vh] overflow-hidden bg-black pt-[64vh] pb-32 [mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] sm:pb-48"
+      className="relative isolate z-10 -mt-[75vh] overflow-hidden pt-[64vh] pb-16 [mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_22vh,#000_62vh)] sm:pb-24"
     >
       {/* an ice-blue black hole through a drifting asteroid field (reference pin 018017) */}
-      <div className="absolute inset-0 -z-10">
+      {/* the bottom dissolves into the shared sky: no edge where the Needs section begins */}
+      <div className="feather-b absolute inset-0 -z-10 [--feather:28vh]">
         <ShaderCanvas frag={asteroidFieldFrag} uniforms={uniforms} scale={0.6} post={POST} />
       </div>
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/20 to-black" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/20 to-transparent" />
       {/* scrim under the paragraph so the ring and rocks never cut into the text */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_75%_55%_at_40%_62%,rgb(0_0_0/0.75),transparent_78%)]" />
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -76,7 +77,9 @@ export function Manifesto() {
           ))}
         </p>
         {/* why the name: the founders' brief, in their words */}
-        <div className="mt-16 grid gap-6 border-t border-line pt-10 sm:grid-cols-[auto_1fr_auto] sm:items-baseline sm:gap-10">
+        <div className="relative mt-16 grid gap-6 border-t border-line pt-10 sm:grid-cols-[auto_1fr_auto] sm:items-baseline sm:gap-10">
+          {/* the asteroids drift behind this paragraph: a dark pool under it keeps it readable */}
+          <div aria-hidden className="pointer-events-none absolute -inset-x-16 -inset-y-10 -z-10 bg-[radial-gradient(closest-side,rgb(0_0_0/0.8),transparent)]" />
           <p className="eyebrow">Why Cosmos</p>
           <p className="max-w-2xl text-lg leading-relaxed text-star/85">
             There is life beyond the noise of everyday society. When you focus on yourself and clear the junk from mind and body, Cosmos is here to help you

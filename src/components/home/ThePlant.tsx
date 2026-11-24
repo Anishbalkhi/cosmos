@@ -5,7 +5,7 @@ import { LeafLegend, LeafScene } from "@/components/science/LeafScene";
 
 export function ThePlant() {
   return (
-    <section className="py-24 sm:py-32">
+    <section className="pt-20 pb-10 sm:pt-28 sm:pb-12">
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <Reveal>
           <p className="eyebrow mb-5">The plant</p>

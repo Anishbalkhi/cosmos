@@ -10,6 +10,7 @@ export function AddToCartButton({ slug, className, label = "Add to cart" }: { sl
   return (
     <button
       type="button"
+      data-sfx="added"
       onClick={() => add(slug)}
       className={clsx(
         "inline-flex h-11 items-center justify-center rounded-full bg-star px-5 text-sm font-semibold text-space transition-all duration-300 ease-cosmic hover:bg-flare",
@@ -30,6 +31,7 @@ export function BuyBox({ slug, price }: { slug: string; price: string }) {
       <QtyStepper value={qty} onChange={(q) => setQty(Math.max(1, q))} />
       <button
         type="button"
+        data-sfx="added"
         onClick={() => add(slug, qty)}
         className="inline-flex h-12 flex-1 items-center justify-center gap-3 rounded-full bg-flare px-8 font-semibold text-space transition-all duration-300 ease-cosmic hover:bg-flare-soft hover:shadow-[0_0_40px_4px_rgb(var(--accent-rgb)/0.35)] sm:flex-none"
       >

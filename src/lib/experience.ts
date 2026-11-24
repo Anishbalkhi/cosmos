@@ -8,12 +8,15 @@ type Experience = {
   sound: boolean;
   boost: number; // 0..1 spins up the black hole (intro portal, click-and-hold)
   introDone: boolean; // hero entrance waits for this
+  /** the hero's black hole has drawn its first frame (the loader waits for it on the home page) */
+  heroReady: boolean;
   lenis: Lenis | null;
   /** viewport point (px) the intro portal opened from: the arrival's black hole starts right there */
   portal: { x: number; y: number } | null;
   setSound: (on: boolean) => void;
   setBoost: (b: number) => void;
   setIntroDone: (d: boolean) => void;
+  setHeroReady: (r: boolean) => void;
   setLenis: (l: Lenis | null) => void;
   setPortal: (p: { x: number; y: number } | null) => void;
 };
@@ -22,11 +25,13 @@ export const useExperience = create<Experience>((set) => ({
   sound: false,
   boost: 0,
   introDone: false,
+  heroReady: false,
   lenis: null,
   portal: null,
   setSound: (sound) => set({ sound }),
   setBoost: (boost) => set({ boost }),
   setIntroDone: (introDone) => set({ introDone }),
+  setHeroReady: (heroReady) => set({ heroReady }),
   setLenis: (lenis) => set({ lenis }),
   setPortal: (portal) => set({ portal }),
 }));

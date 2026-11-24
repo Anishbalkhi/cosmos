@@ -1,11 +1,50 @@
 "use client";
 
+import { useExperience } from "@/lib/experience";
+
 /**
- * Generated ambient sound (Web Audio, no audio files): a low space drone,
- * a hold "spin-up" and an entry whoosh. Only starts after a user gesture.
+ * The site's sound (Web Audio). Only starts after a user gesture.
+ * - A low space drone and the hold "spin-up", generated (no file).
+ * - Designed one-shots in /public/sounds, made with earshot from public-domain recordings
+ *   (free to use): the intro whoosh, the arrival's breach and landing, and a few interface sounds.
+ *   Each plays on its own; the generated versions below are only a fallback while they load.
  */
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
+/** interface sounds: their own bus, so they are heard at once (the drone's master fades in slowly) */
+let ui: GainNode | null = null;
+
+const SAMPLES = ["toggle-on", "toggle-off", "press", "added", "whoosh", "breach", "land"] as const;
+export type Sample = (typeof SAMPLES)[number];
+const buffers = new Map<Sample, AudioBuffer>();
+let loading: Promise<void> | null = null;
+
+function load(c: AudioContext) {
+  loading ??= Promise.all(
+    SAMPLES.map(async (n) => {
+      try {
+        const r = await fetch(`/sounds/${n}.mp3`);
+        buffers.set(n, await c.decodeAudioData(await r.arrayBuffer()));
+      } catch {
+        // a missing sound is silence, never an error
+      }
+    }),
+  ).then(() => undefined);
+  return loading;
+}
+
+/** play a one-shot now; false if it isn't decoded yet */
+function playSample(name: Sample, bus: GainNode | null, gain = 1) {
+  const b = buffers.get(name);
+  if (!ctx || !bus || !b) return false;
+  const src = ctx.createBufferSource();
+  src.buffer = b;
+  const g = ctx.createGain();
+  g.gain.value = gain;
+  src.connect(g).connect(bus);
+  src.start();
+  return true;
+}
 let droneFilter: BiquadFilterNode | null = null;
 const oscs: OscillatorNode[] = [];
 
@@ -28,6 +67,10 @@ function ensure() {
   master = ctx.createGain();
   master.gain.value = 0;
   master.connect(ctx.destination);
+  ui = ctx.createGain();
+  ui.gain.value = 0.6;
+  ui.connect(ctx.destination);
+  void load(ctx);
 
   droneFilter = ctx.createBiquadFilter();
   droneFilter.type = "lowpass";
@@ -78,7 +121,25 @@ export const ambient = {
     droneFilter.frequency.setTargetAtTime(380 + b * 1400, ctx.currentTime, 0.15);
     oscs.forEach((o, i) => o.detune.setTargetAtTime((i - 1) * 7 + b * 700, ctx!.currentTime, 0.2));
   },
-  /** a deep sub-bass hit (felt more than heard) with a muffled crack on top */
+  /**
+   * An interface sound, for something the visitor did on purpose (only while sound is on, unless
+   * `force`: the sound toggle itself). Waits for the files on the very first use.
+   */
+  ui(name: Sample, force = false) {
+    if (!force && !useExperience.getState().sound) return;
+    const c = ensure();
+    if (c.state === "suspended") void c.resume();
+    if (!playSample(name, ui)) void load(c).then(() => playSample(name, ui));
+  },
+  /** the arrival breaking through (the file's peak is 0.38 s in: call it that much before the moment) */
+  breach() {
+    if (!playSample("breach", master, 1.2)) this.thump(1);
+  },
+  /** the arrival settling */
+  land() {
+    if (!playSample("land", master, 0.9)) this.thump(0.45);
+  },
+  /** a deep sub-bass hit (felt more than heard) with a muffled crack on top: the fallback for breach / land */
   thump(strength = 1) {
     if (!ctx || !master) return;
     const t = ctx.currentTime;
@@ -110,6 +171,7 @@ export const ambient = {
   },
   whoosh() {
     if (!ctx || !master) return;
+    if (playSample("whoosh", master, 1.1)) return;
     const src = ctx.createBufferSource();
     src.buffer = noiseBuffer(ctx, 2);
     const bp = ctx.createBiquadFilter();

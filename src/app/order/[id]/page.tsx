@@ -19,7 +19,7 @@ export default function OrderPage(props: PageProps<"/order/[id]">) {
       <div className="mx-auto max-w-3xl">
         <div className="relative mx-auto grid h-28 w-28 place-items-center">
           <div className="absolute inset-0 rounded-full bg-flare/30 blur-2xl" />
-          <LeafStar className="relative h-20 w-20" />
+          <LeafStar live className="relative h-20 w-20" />
         </div>
         <p className="eyebrow mt-10 text-center">
           <Suspense fallback="Order confirmed">

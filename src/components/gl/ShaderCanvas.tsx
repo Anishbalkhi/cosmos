@@ -158,23 +158,40 @@ export function ShaderCanvas({
       return s;
     };
     const vs = compile(g.VERTEX_SHADER, VERT);
-    const makeProgram = (src: string) => {
+    // KHR_parallel_shader_compile: compile and link off the main thread; we poll COMPLETION_STATUS each frame
+    const par = g.getExtension("KHR_parallel_shader_compile") as { COMPLETION_STATUS_KHR: number } | null;
+    const makeProgram = (src: string, defer = false) => {
       const prog = g.createProgram()!;
       g.attachShader(prog, vs);
-      g.attachShader(prog, compile(g.FRAGMENT_SHADER, src));
+      const fs = g.createShader(g.FRAGMENT_SHADER)!;
+      g.shaderSource(fs, src);
+      g.compileShader(fs);
+      g.attachShader(prog, fs);
       g.bindAttribLocation(prog, 0, "a");
       g.linkProgram(prog);
-      if (!g.getProgramParameter(prog, g.LINK_STATUS)) console.error(g.getProgramInfoLog(prog));
+      const check = () => {
+        if (!g.getProgramParameter(prog, g.LINK_STATUS)) console.error(g.getShaderInfoLog(fs), g.getProgramInfoLog(prog));
+      };
+      if (!defer || !par) check();
       const locs = new Map<string, WebGLUniformLocation | null>();
       const u = (name: string) => {
         if (!locs.has(name)) locs.set(name, g.getUniformLocation(prog, name));
         return locs.get(name)!;
       };
-      return { prog, u };
+      return { prog, u, check };
     };
     type Prog = ReturnType<typeof makeProgram>;
 
-    const scene = makeProgram((hdr ? "#define HDR\n" : "") + P + frag);
+    const scene = makeProgram((hdr ? "#define HDR\n" : "") + P + frag, true);
+    let sceneReady = !par;
+    const sceneDone = () => {
+      if (sceneReady) return true;
+      if (!g.getProgramParameter(scene.prog, par!.COMPLETION_STATUS_KHR)) return false;
+      scene.check();
+      bindSceneTextures();
+      sceneReady = true;
+      return true;
+    };
 
     const buf = g.createBuffer();
     g.bindBuffer(g.ARRAY_BUFFER, buf);
@@ -182,8 +199,8 @@ export function ShaderCanvas({
     g.enableVertexAttribArray(0);
     g.vertexAttribPointer(0, 2, g.FLOAT, false, 0, 0);
 
-    // scene textures
-    g.useProgram(scene.prog);
+    // scene textures (uploaded now; their sampler uniforms are set once the scene program has linked)
+    const samplers: [string, number][] = [];
     Object.entries(textures?.() ?? {}).forEach(([name, src], i) => {
       const unit = SCENE_UNIT + i;
       const tex = g.createTexture();
@@ -205,9 +222,14 @@ export function ShaderCanvas({
         g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
       }
       g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
-      g.uniform1i(scene.u(name), unit);
+      samplers.push([name, unit]);
     });
     g.activeTexture(g.TEXTURE0);
+    function bindSceneTextures() {
+      g.useProgram(scene.prog);
+      samplers.forEach(([name, unit]) => g.uniform1i(scene.u(name), unit));
+    }
+    if (sceneReady) bindSceneTextures();
 
     // ---- HDR post chain ----
     let bright: Prog | null = null;
@@ -318,6 +340,7 @@ export function ShaderCanvas({
     let raf = 0;
     const start = performance.now();
     const draw = (now: number) => {
+      if (!sceneDone()) return false;
       mouse.x += (mouse.tx - mouse.x) * 0.04;
       mouse.y += (mouse.ty - mouse.y) * 0.04;
       const time = reduced ? 12 : (now - start) / 1000;
@@ -340,7 +363,7 @@ export function ShaderCanvas({
       g.uniform2f(scene.u("uMouse"), mouse.x, mouse.y);
       setExtras(scene, extra);
       g.drawArrays(g.TRIANGLES, 0, 3);
-      if (!t || !settings) return;
+      if (!t || !settings) return true;
 
       // bloom: bright pass at half res, two widening blurs, then a wider quarter-res bloom
       brightPass(t.scene, t.hA, settings.threshold ?? 0.9);
@@ -374,6 +397,7 @@ export function ShaderCanvas({
       g.uniform1f(c.u("uTime"), time);
       setExtras(c, extra);
       g.drawArrays(g.TRIANGLES, 0, 3);
+      return true;
     };
 
     const resize = () => {
@@ -395,8 +419,7 @@ export function ShaderCanvas({
     // the first frame is the slow one (shader compile, texture upload): report ready only once it is on screen
     let frames = 0;
     const loop = (now: number) => {
-      if (visible && activeRef.current?.() !== false) {
-        draw(now);
+      if (visible && activeRef.current?.() !== false && draw(now)) {
         frames += 1;
         if (frames === 2) readyRef.current?.();
       }
@@ -406,10 +429,13 @@ export function ShaderCanvas({
     ro.observe(canvas);
     resize();
     if (reduced) {
-      draw(performance.now());
-      readyRef.current?.();
-    }
-    else raf = requestAnimationFrame(loop);
+      // one still frame, as soon as the scene has linked
+      const once = () => {
+        if (draw(performance.now())) readyRef.current?.();
+        else raf = requestAnimationFrame(once);
+      };
+      once();
+    } else raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);

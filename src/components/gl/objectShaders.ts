@@ -202,8 +202,10 @@ vec3 moonBg(vec2 uv, vec3 c){
     c = mix(c, tx.rgb * (0.025 + 1.25 * pow(lit, 0.8)), tx.a * (1.0 - smoothstep(0.99, 1.0, r)));
   }
   vec2 sp = vec2(-0.36, 0.4);                                                  // the Goldilocks star
-  float sd = length(uv - sp);
-  c += vec3(1.0, 0.8, 0.5) * (3.5 * exp(-sd * sd / 0.00015) + 0.35 * exp(-sd / 0.07));
+  vec2 sq = uv - sp;
+  float sd = length(sq);
+  float spikes = exp(-abs(sq.y) * 260.0) * exp(-abs(sq.x) * 10.0) + exp(-abs(sq.x) * 260.0) * exp(-abs(sq.y) * 10.0);
+  c += vec3(1.0, 0.8, 0.5) * (1.4 * exp(-sd * sd / 0.0005) + 0.4 * exp(-sd / 0.08) + 0.5 * spikes);
   return c;
 }
 vec3 background(vec2 uv){

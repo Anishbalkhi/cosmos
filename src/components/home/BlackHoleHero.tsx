@@ -5,10 +5,7 @@ import { gsap } from "gsap";
 import clsx from "clsx";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
 import { blackHoleFrag } from "@/components/gl/shaders";
-import { makeCodeTexture } from "@/components/gl/codeTexture";
-import { zoomNoiseTexture } from "@/components/gl/zoomShaders";
 
-const codeTextures = () => ({ uCode: makeCodeTexture(), uNoise: zoomNoiseTexture() });
 import { scrollToY, useExperience } from "@/lib/experience";
 import { ambient } from "@/lib/ambient";
 import { ButtonLink } from "@/components/ui/Button";
@@ -52,7 +49,8 @@ export function BlackHoleHero() {
   const ring = useRef<SVGCircleElement>(null);
   const progress = useRef(0);
   const boost = useRef(0);
-  const warp = useRef({ v: 1 });
+  // the arrival's first frame (near the hole, the last of the stream falling in): shown behind the loader as it fades
+  const warp = useRef({ v: 0.64 });
   const camera = useRef({ last: 0, lastW: 1, amp: 0, x: 0, y: 0 });
   const [p, setP] = useState(0);
   // cheaper ray-march on phones
@@ -70,12 +68,18 @@ export function BlackHoleHero() {
   useEffect(() => {
     arrivingRef.current = arriving;
   }, [arriving]);
-  const onGlReady = useCallback(() => setGlReady(true), []);
+  const onGlReady = useCallback(() => {
+    setGlReady(true);
+    useExperience.getState().setHeroReady(true);
+  }, []);
   // nothing to draw once the fall has gone fully dark: frees the GPU for the manifesto behind
   const glActive = useCallback(() => progress.current < 0.985, []);
   useEffect(() => {
     // no WebGL (or it failed): don't hold the page hostage, run the timeline on the CSS stand-in
-    const t = setTimeout(() => setGlReady(true), 2500);
+    const t = setTimeout(() => {
+      setGlReady(true);
+      useExperience.getState().setHeroReady(true);
+    }, 2500);
     return () => clearTimeout(t);
   }, []);
 
@@ -144,13 +148,21 @@ export function BlackHoleHero() {
 
     // the arrival's black hole starts exactly where the intro portal opened (the START button),
     // so you see it through the portal; without an intro it drifts in from the left
-    let hole0: [number, number] = [-0.5, 0.04];
-    const portal = useExperience.getState().portal;
+    // (in min-dimension units: on a portrait screen the same numbers would put it off the left edge, so both are
+    // capped to a share of the width; the reference holds it about a quarter of the way across)
     const st = stage.current;
-    if (portal && st) {
-      const r = st.getBoundingClientRect();
-      const m = Math.min(r.width, r.height) || 1;
-      hole0 = [(portal.x - r.left - r.width / 2) / m, (r.top + r.height / 2 - portal.y) / m - 0.11];
+    const sr = st?.getBoundingClientRect();
+    const half = sr ? sr.width / 2 / (Math.min(sr.width, sr.height) || 1) : 1; // half the width, in min units
+    // on portrait screens, positions measured from the reference frames: it starts about a quarter of the way
+    // across and drifts to about 38%, just above mid-height. Landscape keeps its own framing (blend by aspect).
+    const tall = sr ? Math.min(1, Math.max(0, sr.height / (sr.width || 1) - 1) * 2) : 0;
+    const mixN = (a: number, b: number) => a + (b - a) * tall;
+    let hole0: [number, number] = [mixN(Math.max(-0.5, -0.64 * half), -0.48 * half), mixN(0.04, -0.06)];
+    const holeL: [number, number] = [mixN(Math.max(-0.34, -0.48 * half), -0.24 * half), mixN(0.04, -0.06)];
+    const portal = useExperience.getState().portal;
+    if (portal && sr) {
+      const m = Math.min(sr.width, sr.height) || 1;
+      hole0 = [(portal.x - sr.left - sr.width / 2) / m, (sr.top + sr.height / 2 - portal.y) / m - 0.15];
     }
     return {
       uPush: progress.current,
@@ -160,6 +172,7 @@ export function BlackHoleHero() {
       uShake: [cam.x, cam.y, roll] as [number, number, number],
       uExposure: 1.0 + flare * 0.06,
       uHole0: hole0,
+      uHoleL: holeL,
     };
   }, [quality.steps]);
 
@@ -194,15 +207,17 @@ export function BlackHoleHero() {
         tl.call(() => setArriving(false), undefined, "land");
       } else {
         const rumble = { b: 0 };
-        // paced like the reference video (pin 880313058437018011); v = 1 - s, see arrival() in shaders.ts
-        tl.fromTo(warp.current, { v: 1 }, { v: 0.66, duration: 2.2, ease: "power1.in" }, 0) // code pours into the hole
-          .addLabel("whip")
-          .call(() => ambient.thump(1), undefined, "whip")
-          .to(warp.current, { v: 0.5, duration: 0.7, ease: "sine.inOut" }) // the camera banks round to face it
-          .to(warp.current, { v: 0.28, duration: 1.1, ease: "none" }) // light rays stream in
-          .to(warp.current, { v: 0.12, duration: 1.2, ease: "sine.inOut" }) // the fire vortex
+        // starts already near the black hole, as the last of the gas stream falls in (the far-out approach was cut);
+        // v = 1 - s, the s windows are in arrivalCam() in shaders.ts
+        tl.addLabel("whip", 0.35)
+          // the breach sound peaks 0.38 s into its file: it lands in the middle of the turn
+          .call(() => ambient.breach(), undefined, 0.2)
+          .fromTo(warp.current, { v: 0.64 }, { v: 0.5, duration: 0.9, ease: "power1.inOut" }, 0) // 0-0.9 s: the camera turns onto the hole
+          .to(warp.current, { v: 0.37, duration: 0.9, ease: "none" }) // 3.7-4.6 s: light rays from the centre
+          .to(warp.current, { v: 0.2, duration: 0.7, ease: "sine.inOut" }) // 4.6-5.3 s: the hole opens and catches fire
+          .to(warp.current, { v: 0.12, duration: 0.6, ease: "none" }) // 5.3-5.9 s: the fire vortex
           .addLabel("settle")
-          .to(warp.current, { v: 0, duration: 1.5, ease: "sine.inOut" }) // the fire fades as the disk returns: no pop
+          .to(warp.current, { v: 0, duration: 1.3, ease: "sine.inOut" }) // the fire fades as the disk returns: no pop
           .fromTo(
             rumble,
             { b: 0 },
@@ -210,8 +225,8 @@ export function BlackHoleHero() {
             "whip",
           )
           .to(rumble, { b: 0, duration: 1.4, ease: "power2.out", onUpdate: () => ambient.setBoost(rumble.b) }, "whip+=2.3")
-          .call(() => ambient.thump(0.45), undefined, "settle+=0.4")
-          .addLabel("land", "settle+=0.7")
+          .call(() => ambient.land(), undefined, "settle+=0.4")
+          .addLabel("land", "settle+=0.9")
           // the header, announcement bar and sound toggle fade in together with the top labels
           .call(() => setArriving(false), undefined, "land+=0.3");
       }
@@ -332,10 +347,9 @@ export function BlackHoleHero() {
         <ShaderCanvas
           frag={blackHoleFrag}
           uniforms={uniforms}
-          className={clsx("absolute inset-0 transition-opacity duration-700", glReady ? "opacity-100" : "opacity-0")}
+          className={clsx("absolute inset-0 transition-opacity duration-300", glReady ? "opacity-100" : "opacity-0")}
           scale={quality.scale}
           maxDpr={2}
-          textures={codeTextures}
           post={POST}
           onReady={onGlReady}
           active={glActive}
@@ -355,7 +369,6 @@ export function BlackHoleHero() {
             <span className="hero-anim ha-top">
               [ Bangalore ]<span className="hidden xl:inline"> · Plant wisdom, thoughtfully considered</span>
             </span>
-            <span className="hero-anim ha-top hidden sm:block">Soft launch · Dec 2026</span>
           </div>
 
           <div className="mt-auto text-center">
@@ -370,7 +383,7 @@ export function BlackHoleHero() {
                 <Chars text="Cure" className="text-flare-soft italic" />
               </span>
             </h1>
-            <p className="hero-anim ha-sub mx-auto mt-5 max-w-lg text-base text-star/80 sm:mt-6 sm:text-lg [@media(max-height:640px)]:hidden">
+            <p className="hero-anim ha-sub mx-auto mt-5 max-w-xl text-base text-star/85 sm:mt-6 sm:text-xl [@media(max-height:640px)]:hidden">
               Rest, balance and focus. Precisely dosed. Beautifully made.
             </p>
             {/* side by side even on phones, so the hero fits short screens; wraps on the narrowest */}
@@ -393,7 +406,7 @@ export function BlackHoleHero() {
             like the shader), over a soft dark halo, so it never sits on the bright disk */}
         <div
           className="pointer-events-none absolute inset-x-0 z-10 grid -translate-y-1/2 place-items-center px-6 text-center"
-          style={{ opacity: bridge, top: "calc(50% - 11vmin)" }}
+          style={{ opacity: bridge, top: "calc(50% - 15vmin)" }}
         >
           <div className="absolute h-[18rem] w-[min(92vw,56rem)] rounded-[50%] bg-black/70 blur-3xl" />
           <p

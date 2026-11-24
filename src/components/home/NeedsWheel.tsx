@@ -9,7 +9,7 @@ import { comingSoon, getProduct, needs, type NeedId } from "@/lib/data";
 import { scrollToY } from "@/lib/experience";
 import { Planet, type PlanetName } from "@/components/space/Planet";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
-import { milkyWayFrag } from "@/components/gl/sectionShaders";
+import { milkyWayOverFrag } from "@/components/gl/sectionShaders";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,6 +38,8 @@ export function NeedsWheel() {
   const worlds = useRef<(HTMLDivElement | null)[]>([]);
   const trigger = useRef<ScrollTrigger | null>(null);
   const [active, setActive] = useState(0);
+  // true while the wheel is between two worlds: the side labels step aside so a passing planet never sits under one
+  const [turning, setTurning] = useState(false);
 
   useEffect(() => {
     const el = section.current;
@@ -47,7 +49,11 @@ export function NeedsWheel() {
     let target = 0;
     let current = 0;
     let shown = 0;
+    let moving = false;
     let raf = 0;
+    // 0..1 over the last stretch of the section: the worlds set below the horizon before the section ends,
+    // so none is cut off by the edge of the pinned stage as it scrolls away
+    let exit = 0;
 
     const layout = (f: number) => {
       const W = st.clientWidth;
@@ -63,12 +69,13 @@ export function NeedsWheel() {
         const t = Math.min(a, 1);
         const e = easeOut(t);
         // horizon (centre, below the fold) → neighbour (screen edge, mid height) → beyond (off screen)
-        const x = W / 2 + s * (W * 0.5 * e + Math.max(0, a - 1) * W * 0.35);
-        const y = lerp(H + D * 0.16, H * 0.56, e);
+        // neighbours sit just inside the screen edge (whole, not a sliver)
+        const x = W / 2 + s * ((W * 0.5 - side * 0.75) * e + Math.max(0, a - 1) * W * 0.35);
+        const y = lerp(H + D * 0.16, H * 0.56, e) + exit * exit * D * 0.75;
         const scale = lerp(1, side / D, Math.pow(t, 0.7));
         w.style.width = w.style.height = `${D}px`;
         w.style.transform = `translate3d(${x - D / 2}px, ${y - D / 2}px, 0) scale(${scale}) rotate(${-rel * 18}deg)`;
-        w.style.opacity = String(clamp(1.8 - a, 0, 1));
+        w.style.opacity = String(clamp(1.8 - a, 0, 1) * (1 - exit * 0.5));
         w.style.zIndex = String(10 - Math.round(a * 3));
       });
     };
@@ -82,6 +89,11 @@ export function NeedsWheel() {
         shown = r;
         setActive(r);
       }
+      const m = Math.abs(current - r) > 0.04 || Math.abs(target - current) > 0.04;
+      if (m !== moving) {
+        moving = m;
+        setTurning(m);
+      }
       raf = requestAnimationFrame(tick);
     };
 
@@ -93,6 +105,7 @@ export function NeedsWheel() {
         onUpdate: (self) => {
           // each world holds for a stretch of scroll and the wheel only turns in between
           // (a visual "snap": no scroll snapping, which fights the smooth-scroll library)
+          exit = clamp((self.progress - 0.9) / 0.1, 0, 1);
           const x = self.progress * (N - 1);
           const i = Math.min(Math.floor(x), N - 2);
           const k = x - i;
@@ -124,11 +137,17 @@ export function NeedsWheel() {
   const next = active < N - 1 ? needs[active + 1] : null;
 
   return (
-    <section ref={section} className="relative bg-black" style={{ height: `${N * 85 + 15}vh` }} aria-labelledby="orbit-title">
+    <section
+      ref={section}
+      // the whole section fades in and out at its ends (in page coordinates, so only while it enters and leaves):
+      // the pinned worlds never end on a hard clipped edge against the shared sky
+      className="relative [mask-image:linear-gradient(to_bottom,transparent,#000_22vh,#000_calc(100%-40vh),transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_22vh,#000_calc(100%-40vh),transparent)]"
+      style={{ height: `${N * 85 + 15}vh` }} aria-labelledby="orbit-title">
       <div ref={stage} className="sticky top-0 h-dvh overflow-hidden">
         {/* the Milky Way behind the wheel, plus a glow where the horizon rises */}
-        <div className="absolute inset-0 opacity-70" aria-hidden>
-          <ShaderCanvas frag={milkyWayFrag} scale={0.5} />
+        {/* light only: its dark parts are transparent, so the shared sky (and the orbit of light) shows through */}
+        <div className="absolute inset-0 opacity-80" aria-hidden>
+          <ShaderCanvas frag={milkyWayOverFrag} scale={0.5} />
         </div>
         <div
           className="absolute inset-x-0 bottom-0 h-1/2 transition-[background] duration-700"
@@ -162,7 +181,7 @@ export function NeedsWheel() {
           </div>
         ))}
 
-        {/* title block: the active need blurs in, the others blur out */}
+        {/* title block: the old need leaves quickly, then the new one rises in (never two words on top of each other) */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-5 pt-24 text-center sm:pt-28">
           <p className="eyebrow">Find your orbit</p>
           <h2 id="orbit-title" className="sr-only">
@@ -179,9 +198,9 @@ export function NeedsWheel() {
                 <div
                   key={n.id}
                   className={clsx(
-                    "transition-[opacity,filter,transform] duration-700 ease-cosmic",
+                    "transition-[opacity,transform] ease-cosmic",
                     i === 0 ? "relative" : "absolute inset-x-0 top-0",
-                    on ? "opacity-100 blur-0" : "translate-y-4 opacity-0 blur-md",
+                    on ? "translate-y-0 opacity-100 delay-200 duration-500" : "-translate-y-3 opacity-0 duration-200",
                   )}
                   aria-hidden={!on}
                 >
@@ -191,18 +210,20 @@ export function NeedsWheel() {
                     {product ? (
                       <Link
                         href={`/products/${product.slug}`}
+                        data-sfx="press"
                         tabIndex={on ? 0 : -1}
                         className="inline-flex h-12 items-center gap-2 rounded-full bg-star px-6 text-sm font-semibold text-space transition-transform hover:scale-105"
                       >
                         Meet {product.name} <span aria-hidden>→</span>
                       </Link>
                     ) : (
+                      // not a product yet: a quiet dashed chip that says so, and where to hear first
                       <Link
                         href="/#waitlist"
                         tabIndex={on ? 0 : -1}
-                        className="inline-flex h-12 items-center gap-2 rounded-full border border-star/30 px-6 text-sm font-semibold transition-colors hover:border-star/60"
+                        className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-star/25 px-6 text-sm text-star/75 transition-colors hover:border-star/50 hover:text-star"
                       >
-                        {comingSoon.name} · coming soon
+                        {comingSoon.name} is coming · <span className="underline decoration-flare underline-offset-4">Join the waitlist</span>
                       </Link>
                     )}
                   </div>
@@ -217,7 +238,10 @@ export function NeedsWheel() {
           <button
             type="button"
             onClick={() => goTo(active - 1)}
-            className="bracket absolute top-[56%] left-4 z-20 -translate-y-[calc(50%+4.5rem)] text-star/80 transition-colors hover:text-flare-soft sm:left-8 sm:-translate-y-[calc(50%+6rem)]"
+            className={clsx(
+              "bracket absolute top-[56%] left-4 z-20 -translate-y-[calc(50%+4.5rem)] text-star/80 transition-[color,opacity] duration-300 hover:text-flare-soft sm:left-8 sm:-translate-y-[calc(50%+7rem)]",
+              turning && "pointer-events-none opacity-0",
+            )}
           >
             ← {prev.name} · {WORLD[prev.id].label}
           </button>
@@ -226,16 +250,22 @@ export function NeedsWheel() {
           <button
             type="button"
             onClick={() => goTo(active + 1)}
-            className="bracket absolute top-[56%] right-4 z-20 -translate-y-[calc(50%+4.5rem)] text-star/80 transition-colors hover:text-flare-soft sm:right-8 sm:-translate-y-[calc(50%+6rem)]"
+            className={clsx(
+              "bracket absolute top-[56%] right-4 z-20 -translate-y-[calc(50%+4.5rem)] text-star/80 transition-[color,opacity] duration-300 hover:text-flare-soft sm:right-8 sm:-translate-y-[calc(50%+7rem)]",
+              turning && "pointer-events-none opacity-0",
+            )}
           >
             {next.name} · {WORLD[next.id].label} →
           </button>
         )}
 
         {/* progress ticks */}
-        <div className="absolute right-5 bottom-6 z-20 flex gap-2 sm:right-8" aria-hidden>
+        <div className="absolute right-5 bottom-8 z-20 flex gap-2.5 sm:right-8" aria-hidden>
           {needs.map((n, i) => (
-            <span key={n.id} className={clsx("h-[3px] rounded-full transition-all duration-500", i === active ? "w-8 bg-flare" : "w-3 bg-white/25")} />
+            <span
+              key={n.id}
+              className={clsx("h-1 rounded-full transition-all duration-500", i === active ? "w-10 bg-flare shadow-[0_0_10px_var(--color-flare)]" : "w-4 bg-white/45")}
+            />
           ))}
         </div>
       </div>

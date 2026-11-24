@@ -168,10 +168,9 @@ export function Header() {
         data-chrome
         className={clsx(
           "sticky top-0 z-40 transition-all duration-500 ease-cosmic",
-          // scrolled: a soft fade rather than a flat band with a hard edge across the space scenes
-          scrolled && !menu
-            ? "bg-gradient-to-b from-space/90 via-space/55 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_bottom,#000_72%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_72%,transparent)]"
-            : "",
+          // scrolled: a dark frosted band (content passing under it is blurred out, never half-legible),
+          // softened by a shadow instead of a hard line
+          scrolled && !menu ? "bg-space/80 shadow-[0_18px_40px_-20px_rgb(0_0_0/0.95)] backdrop-blur-xl" : "",
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:h-20 sm:px-8">

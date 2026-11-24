@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 
 export function TheRange() {
   return (
-    <section className="py-24 sm:py-32">
+    <section className="pt-24 pb-12 sm:pt-32 sm:pb-16">
       <Container>
         <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-end">
           <SectionHeading eyebrow="The range" title="Three formulas. One belief." intro="The right dose at the right moment is a quiet kind of medicine." />

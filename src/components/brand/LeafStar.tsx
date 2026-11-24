@@ -15,6 +15,23 @@ const LEAFLETS: [number, number][] = [
   [142, 40],
 ];
 
+// idle life for the large mark (motion notes in ./MOTION.md): each leaflet sways around the point where the
+// leaflets meet, like a plant around its stem; longer leaflets a little more, every one on its own period
+// and phase (seeded by index, never random), so they never move in sync. Amplitudes in degrees, ms.
+const SWAY = { amp: [1.4, 1.0], period: [3600, 1600] } as const;
+const seeded = (i: number, k = 0) => {
+  const x = Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+};
+function swayStyle(i: number, len: number) {
+  const period = SWAY.period[0] + seeded(i) * SWAY.period[1];
+  return {
+    "--amp": `${(SWAY.amp[0] + (len / 90) * SWAY.amp[1]).toFixed(2)}deg`,
+    "--dur": `${Math.round(period)}ms`,
+    "--delay": `${Math.round(-seeded(i, 1) * period)}ms`,
+  } as React.CSSProperties;
+}
+
 function leafletPath(len: number) {
   const w = len * 0.055;
   // thin lens from the origin pointing up
@@ -36,10 +53,13 @@ export function LeafStar({
   className,
   color = "var(--color-leaf)",
   title,
+  live = false,
 }: {
   className?: string;
   color?: string;
   title?: string;
+  /** calm idle sway, for the mark as artwork (never in the header or other chrome) */
+  live?: boolean;
 }) {
   return (
     <svg
@@ -50,9 +70,15 @@ export function LeafStar({
       aria-label={title}
     >
       <g fill={color}>
-        {LEAFLETS.map(([angle, len]) => (
-          <path key={angle} d={leafletPath(len)} transform={`rotate(${angle})`} />
-        ))}
+        {LEAFLETS.map(([angle, len], i) =>
+          live ? (
+            <g key={angle} className="leaf-sway" style={swayStyle(i, len)}>
+              <path d={leafletPath(len)} transform={`rotate(${angle})`} />
+            </g>
+          ) : (
+            <path key={angle} d={leafletPath(len)} transform={`rotate(${angle})`} />
+          ),
+        )}
       </g>
     </svg>
   );

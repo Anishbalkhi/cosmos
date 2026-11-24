@@ -108,7 +108,7 @@ export default function StoryPage() {
                 >
                   <div
                     aria-hidden
-                    className={`pointer-events-none absolute -top-[18%] -right-[28%] w-[95%] transition-transform duration-[1.4s] ease-cosmic group-hover:scale-105 group-hover:-rotate-6 ${v.planet === "saturn" ? "mix-blend-screen" : ""}`}
+                    className={`pointer-events-none absolute -top-[18%] -right-[28%] w-[95%] transition-transform duration-[1.4s] ease-cosmic group-hover:scale-105 group-hover:-rotate-6`}
                   >
                     <Planet name={v.planet} shade="side" glow={v.glow} sizes="300px" />
                   </div>

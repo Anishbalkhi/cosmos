@@ -35,8 +35,8 @@ export function AccentSwitch() {
   };
 
   return (
-    <div className="flex items-center gap-3" role="radiogroup" aria-label="Brand colour preview">
-      <span className="font-mono text-[11px] tracking-[0.14em] text-dust uppercase">Brand colour preview</span>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2" role="radiogroup" aria-label="Brand colour preview">
+      <span className="w-full font-mono text-[11px] tracking-[0.14em] whitespace-nowrap text-dust uppercase sm:w-auto">Brand colour preview</span>
       {OPTIONS.map((o) => (
         <button
           key={o.id}

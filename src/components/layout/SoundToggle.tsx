@@ -15,6 +15,7 @@ export function SoundToggle({ className, label = true }: { className?: string; l
         const next = !sound;
         setSound(next);
         ambient.setOn(next);
+        ambient.ui(next ? "toggle-on" : "toggle-off", true);
       }}
       aria-pressed={sound}
       aria-label={sound ? "Turn sound off" : "Turn sound on"}

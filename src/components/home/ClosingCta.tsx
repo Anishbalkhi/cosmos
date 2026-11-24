@@ -53,13 +53,14 @@ export function ClosingCta() {
   }, []);
 
   return (
-    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden bg-black pt-32 pb-[34vh] sm:pt-40">
-      <div className="absolute inset-0 -z-10" aria-hidden>
+    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-32 pb-[34vh] sm:pt-40">
+      {/* both ends dissolve: into the night of the journal above, and into the footer below (no hard edge) */}
+      <div className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)]" aria-hidden>
         {earth && <ShaderCanvas frag={dawnFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}
       </div>
       {/* wide enough for "Find your Cosmos." on one centred line at the largest size (it overflowed a 4xl column) */}
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
-        <LeafStar className="mx-auto h-12 w-12" />
+        <LeafStar live className="mx-auto h-12 w-12" />
         <p className="bracket mt-8 text-star/80">[ Your next discovery starts here ]</p>
         <h2 data-split className="display mt-6 text-6xl sm:text-8xl lg:text-9xl">
           Explore with intention.

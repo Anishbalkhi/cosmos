@@ -7,6 +7,7 @@ import { LeafToGummy } from "@/components/science/LeafToGummy";
 import { CosmosToCell } from "@/components/science/CosmosToCell";
 import { Reveal } from "@/components/ui/Reveal";
 import { products } from "@/lib/data";
+import { ExplainerVideo } from "@/components/science/ExplainerVideo";
 
 export const metadata: Metadata = {
   title: "The Science",
@@ -76,7 +77,14 @@ export default function SciencePage() {
           <p className="eyebrow mb-5">Dosing guide</p>
           <h2 className="display max-w-3xl text-4xl sm:text-5xl">Start low. Go slow.</h2>
           <p className="mt-6 max-w-2xl text-dust">Effects build over 45 to 90 minutes. Wait at least two hours before taking more. Never drive after use.</p>
-          <div className="mt-12 overflow-x-auto rounded-[24px] border border-line">
+          <figure className="mt-12 overflow-hidden rounded-[24px] border border-line">
+            <ExplainerVideo
+              src="/video/start-low-go-slow.mp4"
+              poster="/video/start-low-go-slow.jpg"
+              label="Start low, go slow: take one gummy, your body digests it, it is felt in 45 to 90 minutes, wait two hours before more."
+            />
+          </figure>
+          <div className="mt-8 overflow-x-auto rounded-[24px] border border-line">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="bg-space-2 font-mono text-[11px] tracking-[0.14em] text-dust uppercase">
                 <tr>

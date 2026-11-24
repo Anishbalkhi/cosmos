@@ -36,11 +36,12 @@ export function JournalTeaser() {
   const shown = hover ?? 0;
 
   return (
-    <section className="relative isolate overflow-hidden py-28 sm:py-36" onPointerLeave={() => setHover(null)}>
-      <div className="absolute inset-0 -z-20" aria-hidden>
+    <section className="relative isolate overflow-hidden pt-16 pb-28 sm:pt-20 sm:pb-36" onPointerLeave={() => setHover(null)}>
+      <div className="feather-y absolute inset-0 -z-20 opacity-70 [--feather:26%]" aria-hidden>
         <ShaderCanvas frag={starTrailsFrag} uniforms={uniforms} scale={0.75} maxDpr={1.75} post={POST} />
       </div>
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-space via-space/10 to-space" aria-hidden />
+      {/* the trails stay quiet behind the titles: a dark wash over the index column */}
+      <div className="feather-y absolute inset-0 -z-10 bg-gradient-to-r from-space/75 via-space/40 to-transparent [--feather:26%]" aria-hidden />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-end">
@@ -67,7 +68,7 @@ export function JournalTeaser() {
                     onBlur={() => setHover(null)}
                     className={clsx(
                       "group grid grid-cols-[auto_1fr_auto] items-start gap-x-5 border-t border-line py-8 transition-opacity duration-500 sm:gap-x-10 sm:py-10",
-                      hover !== null && hover !== i && "opacity-45",
+                      hover !== null && hover !== i && "opacity-60",
                     )}
                   >
                     <span className="pt-2 font-mono text-xs tracking-[0.18em] text-flare-soft sm:pt-3">{String(i + 1).padStart(2, "0")}</span>
@@ -82,7 +83,7 @@ export function JournalTeaser() {
                     </span>
                     <span className="flex flex-col items-end gap-4 pt-1">
                       <span className="grid h-12 w-12 place-items-center rounded-full border border-line transition-[transform,background-color,border-color,color] duration-500 group-hover:-rotate-45 group-hover:border-flare group-hover:bg-flare group-hover:text-space">
-                        <span aria-hidden>→</span>
+                        <span aria-hidden className="text-lg font-semibold">→</span>
                       </span>
                       {/* no preview panel below lg: a small planet marks each story instead */}
                       <Planet name={TAG_PLANET[a.tag].planet} shade="soft" className="w-11 lg:hidden" sizes="44px" />
