@@ -58,8 +58,23 @@ export function BlackHoleHero() {
     typeof window !== "undefined" && window.innerWidth < 768 ? { scale: 0.42, steps: 70 } : { scale: 0.62, steps: 120 },
   );
   const introDone = useExperience((s) => s.introDone);
+  const lenis = useExperience((s) => s.lenis);
   // true until the headline lands: hides the site chrome (see [data-arriving] in globals.css)
   const [arriving, setArriving] = useState(true);
+
+  // the arrival always plays on the hero: no scrolling until the headline has landed.
+  // (overflow alone isn't enough: Lenis scrolls by script, so it has to be stopped too;
+  //  this re-runs if Lenis boots after the hero)
+  useEffect(() => {
+    if (!arriving) return;
+    const html = document.documentElement;
+    html.style.overflow = "hidden";
+    lenis?.stop();
+    return () => {
+      html.style.overflow = "";
+      lenis?.start();
+    };
+  }, [arriving, lenis]);
 
   // scroll progress through the 230vh section
   useEffect(() => {
@@ -126,7 +141,7 @@ export function BlackHoleHero() {
       uWarp: w,
       uSteps: quality.steps,
       uShake: [cam.x, cam.y, roll] as [number, number, number],
-      uExposure: 1.0 + flare * 0.2,
+      uExposure: 1.0 + flare * 0.06,
       uHole0: hole0,
     };
   }, [quality.steps]);
@@ -134,32 +149,57 @@ export function BlackHoleHero() {
   // entrance once the intro portal has opened: approach → hang at the edge → dive, then the headline lands
   useEffect(() => {
     if (!introDone) return;
+    // start from the very top, whatever the browser restored or the wheel did during loading
+    window.scrollTo(0, 0);
+    useExperience.getState().lenis?.scrollTo(0, { immediate: true, force: true });
+    let hurry: (() => void) | null = null;
     const ctx = gsap.context(() => {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const tl = gsap.timeline({ delay: 0.05 });
+      // scrolling (or a key) during the arrival doesn't leave it behind: it speeds it up instead
+      hurry = () => {
+        if (tl.currentLabel() !== "land" && tl.timeScale() < 3) gsap.to(tl, { timeScale: 3, duration: 0.5, ease: "power2.out" });
+      };
+      const calm = () => {
+        if (hurry) {
+          window.removeEventListener("wheel", hurry);
+          window.removeEventListener("touchmove", hurry);
+          window.removeEventListener("keydown", hurry);
+        }
+        gsap.to(tl, { timeScale: 1, duration: 0.3 });
+      };
+      window.addEventListener("wheel", hurry, { passive: true });
+      window.addEventListener("touchmove", hurry, { passive: true });
+      window.addEventListener("keydown", hurry);
       if (reduced) {
         tl.set(warp.current, { v: 0 });
         tl.addLabel("land", 0);
         tl.call(() => setArriving(false), undefined, "land");
       } else {
         const rumble = { b: 0 };
-        tl.fromTo(warp.current, { v: 1 }, { v: 0.62, duration: 2.2, ease: "power2.inOut" }, 0) // approach
-          .to(warp.current, { v: 0.55, duration: 0.8, ease: "none" }) // hang at the edge
-          .addLabel("dive")
-          .call(() => ambient.thump(1), undefined, "dive")
-          .to(warp.current, { v: 0, duration: 3.2, ease: "power3.inOut" }, "dive") // dive
+        // paced like the reference video (pin 880313058437018011); v = 1 - s, see arrival() in shaders.ts
+        tl.fromTo(warp.current, { v: 1 }, { v: 0.66, duration: 2.2, ease: "power1.in" }, 0) // code pours into the hole
+          .addLabel("whip")
+          .call(() => ambient.thump(1), undefined, "whip")
+          .to(warp.current, { v: 0.5, duration: 0.6, ease: "power2.inOut" }) // the camera whips round to face it
+          .to(warp.current, { v: 0.28, duration: 1.1, ease: "none" }) // light rays stream in
+          .to(warp.current, { v: 0.12, duration: 1.2, ease: "power1.out" }) // the fire vortex
+          .addLabel("settle")
+          .to(warp.current, { v: 0, duration: 1.0, ease: "power2.out" }) // flames clear onto the hero black hole
           .fromTo(
             rumble,
             { b: 0 },
-            { b: 0.85, duration: 2.2, ease: "power2.in", onUpdate: () => ambient.setBoost(rumble.b) },
-            "dive",
+            { b: 0.85, duration: 1.7, ease: "power2.in", onUpdate: () => ambient.setBoost(rumble.b) },
+            "whip",
           )
-          .to(rumble, { b: 0, duration: 1.4, ease: "power2.out", onUpdate: () => ambient.setBoost(rumble.b) }, "dive+=2.2")
-          .call(() => ambient.thump(0.45), undefined, "dive+=3.1")
-          .addLabel("land", "dive+=2.0")
+          .to(rumble, { b: 0, duration: 1.4, ease: "power2.out", onUpdate: () => ambient.setBoost(rumble.b) }, "whip+=2.3")
+          .call(() => ambient.thump(0.45), undefined, "settle+=0.2")
+          .addLabel("land", "settle+=0.3")
           // the header, announcement bar and sound toggle fade in with the headline, not before
           .call(() => setArriving(false), undefined, "land+=0.4");
       }
+      // the headline itself always lands at normal speed
+      tl.call(calm, undefined, "land");
       tl.fromTo(".ha-char", { opacity: 1, yPercent: 120, rotate: 8 }, { yPercent: 0, rotate: 0, duration: 1.6, ease: "expo.out", stagger: 0.07 }, "land")
         .fromTo(".ha-top", { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.1 }, "land+=0.2")
         .fromTo(".ha-sub", { opacity: 0, y: 24, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" }, "land+=0.55")
@@ -168,7 +208,14 @@ export function BlackHoleHero() {
         .fromTo(".ha-rail", { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: "expo.inOut" }, "land+=0.9");
     }, section);
     // (if the hero unmounts mid-arrival, its data-arriving element goes with it, so the chrome reappears)
-    return () => ctx.revert();
+    return () => {
+      if (hurry) {
+        window.removeEventListener("wheel", hurry);
+        window.removeEventListener("touchmove", hurry);
+        window.removeEventListener("keydown", hurry);
+      }
+      ctx.revert();
+    };
   }, [introDone]);
 
   // Noomo-style "click and hold" cursor
@@ -247,7 +294,9 @@ export function BlackHoleHero() {
   }, []);
 
   const fadeOut = Math.max(0, 1 - p * 2.6);
-  const bridge = Math.max(0, Math.min(1, (p - 0.55) * 3));
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  // the bridge line rises as you pass the horizon and is gone before the manifesto surfaces
+  const bridge = clamp01((p - 0.38) / 0.17) * (1 - clamp01((p - 0.68) / 0.12));
 
   return (
     <section ref={section} className="relative h-[230vh]" aria-label="Cosmos">

@@ -51,7 +51,13 @@ export function Manifesto() {
   }, []);
 
   return (
-    <section ref={section} className="relative isolate overflow-hidden bg-black py-32 sm:py-48">
+    // Merged with the hero: it slides up under the last 75vh of the fall through the event horizon,
+    // and its top 45vh is masked from transparent, so the asteroid field surfaces out of the darkness
+    // instead of meeting it at an edge. The text starts below the mask (pt-[52vh]) so it is never faded.
+    <section
+      ref={section}
+      className="relative isolate z-10 -mt-[75vh] overflow-hidden bg-black pt-[52vh] pb-32 [mask-image:linear-gradient(to_bottom,transparent,#000_45vh)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_45vh)] sm:pb-48"
+    >
       {/* an ice-blue black hole through a drifting asteroid field (reference pin 018017) */}
       <div className="absolute inset-0 -z-10">
         <ShaderCanvas frag={asteroidFieldFrag} uniforms={uniforms} scale={0.6} post={POST} />

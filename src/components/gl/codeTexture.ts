@@ -41,7 +41,8 @@ export function makeCodeTexture() {
   g.fillRect(0, 0, c.width, c.height);
   const rows = 32;
   const lh = c.height / rows;
-  g.font = `500 ${Math.round(lh * 0.62)}px "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace`;
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-geist-mono").trim() || "ui-monospace, Menlo, Consolas, monospace";
+  g.font = `500 ${Math.round(lh * 0.62)}px ${mono}`;
   g.textBaseline = "middle";
   let seed = 11;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;

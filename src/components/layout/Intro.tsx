@@ -135,11 +135,14 @@ export function Intro() {
       .add(() => {
         setBoost(1);
         ambient.whoosh();
+        // the arrival starts now, so it is already moving inside the portal as it opens
+        // (no frozen ring); the intro itself unmounts when the portal has swallowed the screen
+        setIntroDone(true);
       })
       .fromTo(el, { "--r": "0px" }, { "--r": `${small}px`, duration: 1, ease: "expo.out" })
       .fromTo(".in-ring", { opacity: 0 }, { opacity: 1, duration: 0.6 }, "<")
       .fromTo(".in-mark", { opacity: 0, scale: 0.85, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1, ease: "expo.out" }, "<0.1")
-      .to({}, { duration: 0.45 })
+      .to({}, { duration: 0.2 })
       .to(el, { "--r": `${full}px`, duration: 1.4, ease: "expo.inOut" })
       .to(".in-mark", { scale: 2.2, opacity: 0, filter: "blur(16px)", duration: 1.2, ease: "expo.in" }, "<")
       .to(".in-ring", { opacity: 0, duration: 0.8 }, "<0.5");
