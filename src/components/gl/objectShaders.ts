@@ -9,7 +9,7 @@ import { finish } from "./sectionShaders";
  * surface, so it stays sharp at any size and costs one draw call.
  */
 
-const space3d = /* glsl */ `
+export const space3d = /* glsl */ `
 const float TANH = 0.42;  // tan(half vertical fov)
 // rotation matrices (GLSL ES 1.00 has no transpose(): v * M applies the inverse)
 mat3 rotY(float a){ float c = cos(a), s = sin(a); return mat3(c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c); }

@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import clsx from "clsx";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
-import { cosmosToCellFrag } from "@/components/gl/sceneShaders";
+import { zoomFrag, zoomNoiseTexture } from "@/components/gl/zoomShaders";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,19 +14,22 @@ const STOPS = [
   { scale: "10²⁴ m", title: "The cosmic web", body: "Galaxies hang on threads of dark matter, like dew on a spider's web." },
   { scale: "10²¹ m", title: "A galaxy", body: "A hundred thousand light years of stars. Every atom in you was forged in one." },
   {
-    scale: "10⁻⁵ m",
-    title: "A neuron",
-    body: "Inside you, a cosmos of its own. The endocannabinoid system is a network of receptors on cells like this one, part of how the body regulates sleep, mood and focus.",
+    scale: "10⁻⁷ m",
+    title: "The surface of a cell",
+    body: "Inside you, a cosmos of its own. Every cell is studded with receptors, and the endocannabinoid system is a network of them: part of how the body regulates sleep, mood and focus.",
   },
   { scale: "10⁻¹⁰ m", title: "An atom", body: "Almost entirely empty space, held together by balance. From the largest scale to the smallest, it's balance all the way down." },
 ];
 
 const N = STOPS.length;
+// built once, shared by every mount: the 3D noise lookup the cosmic web and atom cloud read
+let noiseTex: HTMLCanvasElement | null = null;
+const textures = () => ({ uNoise: (noiseTex ??= zoomNoiseTexture()) });
 const POST = { threshold: 0.7, bloom: 0.55, streak: 0.12, aberration: 0.015, exposure: 1.1, grain: 0.035, vignette: 0.3 };
 
 /**
  * "From the cosmos to your cells" (reference pin 1051520212973196525, a Powers of Ten journey):
- * scrolling zooms through a galaxy, the cosmic web and an atom into a firing neuron, each scale
+ * scrolling dives through four 3D scales (the cosmic web, a galaxy, a neuron, an atom), each scale
  * opening out of the centre of the last, with one caption per stop.
  */
 export function CosmosToCell() {
@@ -70,7 +73,7 @@ export function CosmosToCell() {
     <section ref={section} className="relative bg-black" style={{ height: `${N * 100}vh` }} aria-labelledby="c2c-title">
       <div className="sticky top-0 h-dvh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
-          <ShaderCanvas frag={cosmosToCellFrag} uniforms={uniforms} scale={0.6} post={POST} />
+          <ShaderCanvas frag={zoomFrag} uniforms={uniforms} textures={textures} scale={0.6} post={POST} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/50" aria-hidden />
 
