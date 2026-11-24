@@ -318,14 +318,14 @@ export function BlackHoleHero() {
           <p className="serif-display max-w-4xl text-4xl leading-tight sm:text-6xl lg:text-7xl" style={{ transform: `scale(${0.9 + bridge * 0.1})` }}>
             Past the event horizon,
             <br />
-            <em className="text-flare-soft">the noise can&apos;t follow.</em>
+            <em className="text-flare-soft">the noise can&rsquo;t follow.</em>
           </p>
         </div>
 
         {/* Noomo-style bottom bar */}
         <div className="hero-anim ha-bottom absolute inset-x-0 bottom-0 z-10 px-5 pb-6 sm:px-8">
           <div style={{ opacity: Math.max(0, 1 - Math.max(0, p - 0.7) * 4) }}>
-          <div className="mx-auto flex max-w-7xl items-end justify-between gap-6 font-wide text-[11px] leading-relaxed tracking-[0.18em] whitespace-nowrap text-star/85 sm:text-xs">
+          <div className="mx-auto flex max-w-7xl items-end justify-between gap-6 font-mono text-[11px] leading-relaxed tracking-[0.16em] whitespace-nowrap uppercase text-star/85 sm:text-xs">
             {/* indented on sm–xl so it clears the fixed sound toggle in the bottom-left corner */}
             <span className="hidden sm:ml-28 sm:inline 2xl:ml-0">Are you ready to go beyond the everyday?</span>
             <span className="sm:hidden">Go beyond</span>

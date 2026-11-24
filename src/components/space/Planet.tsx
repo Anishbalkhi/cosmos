@@ -10,13 +10,13 @@ import clsx from "clsx";
 export type PlanetName = "sun" | "earth" | "moon" | "mars" | "jupiter" | "saturn" | "neptune";
 
 const ALT: Record<PlanetName, string> = {
-  sun: "The Sun, photographed by NASA's Solar Dynamics Observatory",
+  sun: "The Sun, photographed by NASA’s Solar Dynamics Observatory",
   earth: "Earth, photographed by the Apollo 17 crew",
-  moon: "The Moon, photographed by NASA's Lunar Reconnaissance Orbiter",
+  moon: "The Moon, photographed by NASA’s Lunar Reconnaissance Orbiter",
   mars: "Mars and Valles Marineris, NASA Viking mosaic",
   jupiter: "Jupiter, photographed by the Hubble Space Telescope",
-  saturn: "Saturn and its rings, photographed by NASA's Cassini",
-  neptune: "Neptune, photographed by NASA's Voyager 2",
+  saturn: "Saturn and its rings, photographed by NASA’s Cassini",
+  neptune: "Neptune, photographed by NASA’s Voyager 2",
 };
 
 export function Planet({

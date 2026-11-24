@@ -11,14 +11,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 // ordered by shrinking scale, so every transition really is a zoom in
 const STOPS = [
-  { scale: "10²⁴ m", title: "The cosmic web", body: "Galaxies hang on threads of dark matter, like dew on a spider's web." },
+  { scale: "10²⁴ m", title: "The cosmic web", body: "Galaxies hang on threads of dark matter, like dew on a spider’s web." },
   { scale: "10²¹ m", title: "A galaxy", body: "A hundred thousand light years of stars. Every atom in you was forged in one." },
   {
     scale: "10⁻⁷ m",
     title: "The surface of a cell",
     body: "Inside you, a cosmos of its own. Every cell is studded with receptors, and the endocannabinoid system is a network of them: part of how the body regulates sleep, mood and focus.",
   },
-  { scale: "10⁻¹⁰ m", title: "An atom", body: "Almost entirely empty space, held together by balance. From the largest scale to the smallest, it's balance all the way down." },
+  { scale: "10⁻¹⁰ m", title: "An atom", body: "Almost entirely empty space, held together by balance. From the largest scale to the smallest, it’s balance all the way down." },
 ];
 
 const N = STOPS.length;

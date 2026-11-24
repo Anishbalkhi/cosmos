@@ -48,7 +48,7 @@ export function TrackForm() {
               <StatusSteps current={2} notes={{ 0: "9 Dec", 1: "10 Dec", 2: "11 Dec" }} />
             </div>
             {/* backend phase: link to the courier's own tracking page for this AWB */}
-            <p className="mt-8 text-sm text-dust">The courier&apos;s live tracking link is in your shipping email.</p>
+            <p className="mt-8 text-sm text-dust">The courier&rsquo;s live tracking link is in your shipping email.</p>
           </>
         ) : (
           <div className="grid h-full min-h-48 place-items-center text-center text-sm text-dust">Your order status will appear here.</div>

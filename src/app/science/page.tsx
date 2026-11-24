@@ -15,9 +15,9 @@ export const metadata: Metadata = {
 
 const PROCESS = [
   { n: "01", title: "Source", body: "Fan and sugar leaves from licensed growers, harvested before the plant flowers." },
-  { n: "02", title: "Extract", body: "A clean extraction concentrates the leaf's compounds; no flower or resin ever enters the line." },
+  { n: "02", title: "Extract", body: "A clean extraction concentrates the leaf’s compounds; no flower or resin ever enters the line." },
   { n: "03", title: "Dose", body: "The extract is blended with Ayurvedic botanicals and set into gummies, 5 mg in each piece." },
-  { n: "04", title: "Test", body: "Every batch goes to an independent lab before it's released. The certificate is published here." },
+  { n: "04", title: "Test", body: "Every batch goes to an independent lab before it’s released. The certificate is published here." },
 ];
 
 const DOSING = [
@@ -39,18 +39,18 @@ export default function SciencePage() {
             <span className="text-leaf">Tested, not trusted.</span>
           </>
         }
-        intro="Everything you should know before you take your first gummy: why it's legal, how it's made, how to dose, and the lab report for every batch."
+        intro="Everything you should know before you take your first gummy: why it’s legal, how it’s made, how to dose, and the lab report for every batch."
       />
 
       {/* legal */}
       <section className="py-24 sm:py-32">
         <Container className="grid items-center gap-16 lg:grid-cols-2">
           <Reveal>
-            <p className="eyebrow mb-5">Why it&apos;s legal</p>
+            <p className="eyebrow mb-5">Why it&rsquo;s legal</p>
             <h2 className="display text-4xl sm:text-5xl">The law draws a line through the plant.</h2>
             <div className="mt-8 space-y-5 text-lg leading-relaxed text-star/85">
               <p>
-                India&apos;s NDPS Act prohibits <em>ganja</em>, the flowering or fruiting tops, and <em>charas</em>, the resin. Cannabis leaves and seeds, without those
+                India&rsquo;s NDPS Act prohibits <em>ganja</em>, the flowering or fruiting tops, and <em>charas</em>, the resin. Cannabis leaves and seeds, without those
                 tops, fall outside that definition.
               </p>
               <p>

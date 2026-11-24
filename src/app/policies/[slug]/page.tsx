@@ -38,8 +38,8 @@ const POLICIES: Record<string, { title: string; updated: string; sections: { h: 
     title: "Refund policy",
     updated: "2026-12-01",
     sections: [
-      { h: "Damaged or wrong items", p: "Email us within 48 hours of delivery with a photo and we'll replace or refund the item." },
-      { h: "Opened packs", p: "For safety reasons, opened packs can't be returned." },
+      { h: "Damaged or wrong items", p: "Email us within 48 hours of delivery with a photo and we’ll replace or refund the item." },
+      { h: "Opened packs", p: "For safety reasons, opened packs can’t be returned." },
       { h: "Refund timing", p: "Approved refunds go back to the original payment method within 5 to 7 working days." },
     ],
   },

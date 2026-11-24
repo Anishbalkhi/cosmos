@@ -29,9 +29,9 @@ const PILLARS: ZoomStop[] = [
 ];
 
 const VALUES = [
-  { n: "01", title: "Honest information", body: "What's in it, how much, and what it will and won't do. No miracle claims." },
+  { n: "01", title: "Honest information", body: "What’s in it, how much, and what it will and won’t do. No miracle claims." },
   { n: "02", title: "Respect for the plant", body: "Leaf only, harvested before flowering, the way Ayurveda has used it for centuries." },
-  { n: "03", title: "Design as care", body: "A product you're not embarrassed to leave on the bedside table." },
+  { n: "03", title: "Design as care", body: "A product you’re not embarrassed to leave on the bedside table." },
   { n: "04", title: "Rigour", body: "Independent lab tests on every batch, published for anyone to read." },
 ];
 

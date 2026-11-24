@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, IBM_Plex_Mono, Manrope, Montserrat, Syncopate } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif, Montserrat } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
 import "./globals.css";
@@ -13,19 +13,13 @@ import { SoundToggle } from "@/components/layout/SoundToggle";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 
-/* Type system (cinematic gold-space theme)
-   Cormorant Garamond – headlines · Syncopate – wide titling/labels
-   Manrope – body · IBM Plex Mono – data · Montserrat – logo wordmark only */
+/* Type system (cinematic gold-space theme), three families plus the logo:
+   Instrument Serif – headlines and the gold italic accents · Geist – body and interface
+   Geist Mono – labels, navigation, data, prices · Montserrat – logo wordmark only */
 const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], weight: ["400", "700", "800"] });
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-});
-const syncopate = Syncopate({ variable: "--font-syncopate", subsets: ["latin"], weight: ["400", "700"] });
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
-const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"] });
+const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cosmoscannabis.in"),
@@ -44,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${montserrat.variable} ${cormorant.variable} ${syncopate.variable} ${manrope.variable} ${plexMono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en-IN" className={`${montserrat.variable} ${instrument.variable} ${geist.variable} ${geistMono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
         <Script id="intro-skip" strategy="beforeInteractive">
           {introSkipScript}

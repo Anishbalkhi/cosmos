@@ -31,7 +31,7 @@ function DesktopLinks({ pathname }: { pathname: string }) {
           key={n.href}
           href={n.href}
           className={clsx(
-            "bracket group py-2 text-[0.7rem] transition-colors hover:text-star",
+            "bracket group py-2 whitespace-nowrap transition-colors hover:text-star",
             pathname.startsWith(n.href) ? "text-flare-soft" : "text-star/75",
           )}
           aria-current={pathname.startsWith(n.href) ? "page" : undefined}

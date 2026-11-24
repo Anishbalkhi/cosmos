@@ -12,7 +12,7 @@ export function ContactForm() {
     return (
       <div className="rounded-[28px] border border-leaf/30 bg-leaf/10 p-10">
         <p className="display text-3xl">Message received.</p>
-        <p className="mt-3 text-dust">We&apos;ll get back to you within one working day.</p>
+        <p className="mt-3 text-dust">We&rsquo;ll get back to you within one working day.</p>
       </div>
     );
 

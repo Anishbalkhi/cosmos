@@ -26,7 +26,7 @@ export default function OrderPage(props: PageProps<"/order/[id]">) {
             <OrderNumber params={props.params} />
           </Suspense>
         </p>
-        <h1 className="display mt-4 text-center text-5xl sm:text-7xl">You&apos;re in orbit.</h1>
+        <h1 className="display mt-4 text-center text-5xl sm:text-7xl">You&rsquo;re in orbit.</h1>
         <p className="mx-auto mt-6 max-w-lg text-center text-dust">
           Thank you. Your payment went through and a confirmation with your GST invoice is on its way to your email.
         </p>

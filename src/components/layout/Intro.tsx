@@ -251,7 +251,7 @@ export function Intro() {
               <p className="in-legal mt-10 text-center text-xs text-dust">
                 By entering you confirm you are 18 or older.{" "}
                 <button className="underline underline-offset-4 hover:text-star" onClick={() => setPhase("denied")} disabled={phase !== "start"}>
-                  I&apos;m under 18
+                  I&rsquo;m under 18
                 </button>
               </p>
             </>

@@ -17,9 +17,9 @@
   --color-flare-soft: var(--accent-soft);
   --color-ice: #9cc2ff;          /* galaxy blue, secondary accent */
 
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
 
   --ease-cosmic: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -66,9 +66,29 @@
   body {
     background: var(--color-space);
     color: var(--color-star);
-    font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: -0.006em;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  /* headlines break into even lines; paragraphs avoid a lonely last word */
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+  /* prices, quantities, batch codes and tables line up */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
   }
   ::selection {
     background: var(--color-flare);
@@ -81,39 +101,47 @@
 }
 
 @layer components {
-  /* Small uppercase label above headings */
+  /* Small uppercase label above headings: mono, tracked out, gold */
   .eyebrow {
-    font-family: var(--font-syncopate), sans-serif;
-    font-size: 0.72rem; /* ≥11.5px: Syncopate is wide but light, smaller gets hard to read */
-    letter-spacing: 0.22em;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-flare-soft);
   }
-  /* Display headlines: editorial serif (Cosmos magazine reference) at Klick/Noomo scale */
+  /* Display headlines: Instrument Serif, a high-contrast editorial cut that holds up from
+     card titles to the 13rem hero. One weight only, so never let the browser fake a bold. */
   .display,
   .serif-display {
-    font-family: var(--font-cormorant), ui-serif, Georgia, serif;
-    font-weight: 500;
-    letter-spacing: -0.018em;
-    line-height: 0.92;
+    font-family: var(--font-instrument), ui-serif, Georgia, serif;
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: -0.015em;
+    line-height: 0.95;
+    font-kerning: normal;
+    font-feature-settings: "kern", "liga", "dlig";
   }
   .display em,
   .serif-display em {
     font-style: italic;
     font-weight: 400;
+    letter-spacing: -0.01em;
   }
-  /* Wide cinematic titling (loader, hero bar) */
+  /* Cinematic titling (loader): tight, upright grotesk caps */
   .font-wide {
-    font-family: var(--font-syncopate), sans-serif;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.035em;
     text-transform: uppercase;
   }
   /* Noomo-style bracketed mono label */
   .bracket {
-    font-family: var(--font-syncopate), sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
   .glow-text {
@@ -206,10 +234,10 @@ html:has([data-arriving="true"]) [data-chrome] {
 
 /* Font utilities pinned to the next/font variables (unlayered, so they always win) */
 .font-sans {
-  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 .font-mono {
-  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* Lenis smooth scroll */

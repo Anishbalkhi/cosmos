@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "FAQ", description: "Answers on legal
 export default function FaqPage() {
   return (
     <>
-      <PageHeader scene={sunDriftFrag} eyebrow="FAQ" title="Questions, answered." intro="Legality, effects, orders and returns. If yours isn't here, ask us." />
+      <PageHeader scene={sunDriftFrag} eyebrow="FAQ" title="Questions, answered." intro="Legality, effects, orders and returns. If yours isn’t here, ask us." />
       <Container className="grid gap-12 py-16 sm:py-24 lg:grid-cols-[220px_1fr]">
         <nav aria-label="FAQ sections" className="hidden lg:block">
           <ul className="sticky top-28 space-y-3 text-sm">

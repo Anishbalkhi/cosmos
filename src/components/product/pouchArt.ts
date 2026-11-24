@@ -67,9 +67,9 @@ function rng(seed: string) {
 async function build(p: Product): Promise<PouchTextures> {
   const f: Fonts = {
     mont: family("--font-montserrat", "sans-serif"),
-    sync: family("--font-syncopate", "sans-serif"),
-    man: family("--font-manrope", "sans-serif"),
-    mono: family("--font-plex-mono", "monospace"),
+    sync: family("--font-geist-mono", "monospace"),
+    man: family("--font-geist", "sans-serif"),
+    mono: family("--font-geist-mono", "monospace"),
   };
   await Promise.all(
     [`800 48px ${f.mont}`, `700 36px ${f.mont}`, `700 15px ${f.sync}`, `400 11px ${f.sync}`, `600 16px ${f.man}`, `400 14px ${f.mono}`].map((font) =>

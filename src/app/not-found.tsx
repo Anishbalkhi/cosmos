@@ -15,7 +15,7 @@ export default function NotFound() {
       <div className="px-5">
         <p className="eyebrow">Error 404</p>
         <h1 className="display mt-6 text-6xl sm:text-8xl">Lost in space.</h1>
-        <p className="mx-auto mt-6 max-w-md text-star/80">This page drifted past the event horizon. Let&apos;s get you back.</p>
+        <p className="mx-auto mt-6 max-w-md text-star/80">This page drifted past the event horizon. Let&rsquo;s get you back.</p>
         <div className="mt-10 flex justify-center gap-3">
           <ButtonLink href="/" arrow>
             Back home
