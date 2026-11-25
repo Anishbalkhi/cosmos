@@ -41,8 +41,8 @@ export type Product = {
 
 export const needs: Need[] = [
   { id: "rest", name: "Rest", line: "Wind down and stay asleep.", product: "event-horizon" },
-  { id: "balance", name: "Balance", line: "Steady the mood, soften the noise.", product: "nirvana" },
-  { id: "focus", name: "Focus", line: "Clear, calm attention for long days.", product: "moonwalk-bytes" },
+  { id: "balance", name: "Balance", line: "For days that feel too loud.", product: "nirvana" },
+  { id: "focus", name: "Focus", line: "Calm attention, without the jitters.", product: "moonwalk-bytes" },
   { id: "ease", name: "Ease", line: "Relief for a body that’s been working hard.", product: null },
 ];
 
@@ -62,7 +62,7 @@ export const products: Product[] = [
     name: "Event Horizon",
     short: "Event Horizon",
     need: "rest",
-    tagline: "The point past which the day can’t follow you.",
+    tagline: "For falling asleep, and staying asleep.",
     price: 1499,
     mgPerGummy: 5,
     count: 30,
@@ -89,7 +89,7 @@ export const products: Product[] = [
     name: "Space Elevator – Nirvana",
     short: "Nirvana",
     need: "balance",
-    tagline: "A slow ride up, away from the noise.",
+    tagline: "For a steadier, calmer day.",
     price: 1399,
     mgPerGummy: 5,
     count: 30,
@@ -116,7 +116,7 @@ export const products: Product[] = [
     name: "Goldilocks’ Moonwalk Bytes",
     short: "Moonwalk Bytes",
     need: "focus",
-    tagline: "Not too wired, not too slow. Just right.",
+    tagline: "For long stretches of focused work.",
     price: 1399,
     mgPerGummy: 5,
     count: 30,

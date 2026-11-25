@@ -1,89 +1,80 @@
-import type { ComponentType, SVGProps } from "react";
-import clsx from "clsx";
+import Link from "next/link";
 import { Container } from "@/components/ui/Section";
-import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
-import { DrawOn } from "@/components/ui/DrawOn";
-import { LeafScene } from "@/components/science/LeafScene";
-import { IconBox, IconDrop, IconFlask, IconNoFlower, IconPin, IconSeal, IconSprout, IconTag } from "@/components/ui/icons";
+import { LeafStar } from "@/components/brand/LeafStar";
 
-type Standard = { icon: ComponentType<SVGProps<SVGSVGElement>>; label: string; note: string };
+type Row = { label: string; note: string };
 
-// what is in the gummy on the left, how it reaches you on the right
-const LEFT: Standard[] = [
-  { icon: IconNoFlower, label: "No flower, no resin", note: "Leaf only, in every batch" },
-  { icon: IconDrop, label: "Precisely dosed", note: "5 mg in every gummy" },
-  { icon: IconSprout, label: "Vegan", note: "Fruit pectin, no gelatin" },
-  { icon: IconFlask, label: "Lab-tested", note: "Every batch, independent lab" },
+// what goes into the gummy, and how it reaches you
+const IN: Row[] = [
+  { label: "Leaf only", note: "No flower, no resin, in any batch" },
+  { label: "5 mg per gummy", note: "Of Cannabis sativa leaf extract" },
+  { label: "Vegan", note: "Fruit pectin instead of gelatin" },
+  { label: "Lab-tested", note: "Every batch, by an independent lab" },
 ];
-const RIGHT: Standard[] = [
-  { icon: IconSeal, label: "Made under licence", note: "Licence no. published at launch" },
-  { icon: IconTag, label: "Clearly labelled", note: "What, how much, and why" },
-  { icon: IconBox, label: "Discreet delivery", note: "Plain outer box" },
-  { icon: IconPin, label: "Made in India", note: "Bangalore" },
+const OUT: Row[] = [
+  { label: "Made under licence", note: "Licence number published at launch" },
+  { label: "Clearly labelled", note: "What’s in it, how much, and why" },
+  { label: "Discreet delivery", note: "In a plain outer box" },
+  { label: "Made in India", note: "In Bangalore" },
 ];
 
-function Item({ s, i, side }: { s: Standard; i: number; side: "left" | "right" }) {
-  const Icon = s.icon;
+function Table({ title, rows }: { title: string; rows: Row[] }) {
   return (
-    <li
-      style={{ "--i": i } as React.CSSProperties}
-      className={clsx("flex items-center gap-4", side === "left" && "lg:flex-row-reverse lg:text-right")}
-    >
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-black/60 text-flare-soft shadow-[0_0_24px_-6px_rgb(var(--accent-rgb)/0.55)]">
-        <Icon className="h-5 w-5" />
-      </span>
-      <span>
-        <span className="block font-mono text-[11px] font-medium tracking-[0.16em] text-star uppercase">{s.label}</span>
-        <span className="mt-0.5 block text-xs text-dust">{s.note}</span>
-      </span>
-    </li>
+    <div>
+      <h3 className="font-mono text-[11px] tracking-[0.16em] text-space/55 uppercase">{title}</h3>
+      <dl className="mt-4 border-t border-space/15">
+        {rows.map((r) => (
+          <div key={r.label} className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 border-b border-space/15 py-4">
+            <dt className="font-semibold text-space">{r.label}</dt>
+            <dd className="text-space/70">{r.note}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
 /**
- * The plant and the standards in one section (the old floating badge ticker and the leaf section,
- * merged): the law and the leaf as the headline, the leaf itself in the centre, and the eight
- * standards gathered round it, what goes in on one side and how it reaches you on the other.
+ * The plant and its standards as the page's one light section: warm paper, dark text, a plain table of
+ * facts. A deliberate break from the dark space scenes either side, so it reads as a statement of
+ * fact rather than another scene.
  */
 export function TheStandards() {
   return (
-    <section className="py-24 sm:py-32" aria-labelledby="standards-title">
-      <Container>
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow mb-5">The plant · our standards</p>
-          <h2 id="standards-title" data-split className="display text-4xl sm:text-5xl lg:text-6xl">
-            We only use the <span className="text-leaf">leaf.</span>
-          </h2>
-          <p className="mt-6 text-base leading-relaxed text-dust sm:text-lg">
-            India’s law draws a line through the cannabis plant: the flowering tops and resin are prohibited, the leaves are not. Every Cosmos gummy is made
-            from Cannabis sativa leaf extract alone, under licence, and tested by an independent lab.
-          </p>
-        </Reveal>
-
-        <DrawOn className="mt-12 grid items-center gap-x-10 gap-y-10 sm:mt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
-          <ul className="order-2 grid gap-6 sm:grid-cols-2 lg:order-1 lg:grid-cols-1 lg:gap-9">
-            {LEFT.map((s, i) => (
-              <Item key={s.label} s={s} i={i} side="left" />
-            ))}
-          </ul>
-          <LeafScene className="order-1 mx-auto aspect-square w-full max-w-[520px] lg:order-2" />
-          <ul className="order-3 grid gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:gap-9">
-            {RIGHT.map((s, i) => (
-              <Item key={s.label} s={s} i={i + 4} side="right" />
-            ))}
-          </ul>
-        </DrawOn>
-
-        <div className="mt-12 flex flex-wrap justify-center gap-3 sm:mt-14">
-          <ButtonLink href="/science" arrow>
-            The Science
-          </ButtonLink>
-          <ButtonLink href="/science#lab-reports" variant="ghost">
-            See lab reports
-          </ButtonLink>
-        </div>
-      </Container>
+    <section className="px-3 py-10 sm:px-5 sm:py-14" aria-labelledby="standards-title">
+      <div className="rounded-[28px] bg-star text-space sm:rounded-[36px]">
+        <Container className="grid gap-12 py-16 sm:py-20 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-20 lg:py-24">
+          <Reveal>
+            <LeafStar className="h-9 w-9" color="#4f7a1f" />
+            <h2 id="standards-title" className="display mt-8 text-4xl sm:text-5xl lg:text-6xl">
+              We only use the leaf.
+            </h2>
+            <p className="mt-6 max-w-md text-base leading-relaxed text-space/75 sm:text-lg">
+              India’s law draws a line through the cannabis plant: the flowers and resin are prohibited, the leaves are not. Every Cosmos gummy is made from
+              sativa leaf extract alone, under licence, and tested by an independent lab.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link
+                href="/science"
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-space px-6 text-sm font-semibold text-star transition-colors hover:bg-space-3"
+              >
+                The Science <span aria-hidden>→</span>
+              </Link>
+              <Link
+                href="/science#lab-reports"
+                className="inline-flex h-12 items-center rounded-full border border-space/25 px-6 text-sm font-semibold text-space transition-colors hover:border-space/50 hover:bg-space/5"
+              >
+                See lab reports
+              </Link>
+            </div>
+          </Reveal>
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 xl:gap-12">
+            <Table title="In the gummy" rows={IN} />
+            <Table title="How it reaches you" rows={OUT} />
+          </div>
+        </Container>
+      </div>
     </section>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WaitlistForm } from "@/components/layout/WaitlistForm";
-import { LeafStar } from "@/components/brand/LeafStar";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
 import { dawnFrag } from "@/components/gl/sectionShaders";
 
@@ -53,22 +52,16 @@ export function ClosingCta() {
   }, []);
 
   return (
-    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-20 pb-[26vh] sm:pt-24">
+    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-16 pb-[24vh] sm:pt-20">
       {/* both ends dissolve: into the night of the journal above, and into the footer below (no hard edge) */}
       <div className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)]" aria-hidden>
         {earth && <ShaderCanvas frag={dawnFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}
       </div>
       {/* wide enough for "Find your Cosmos." on one centred line at the largest size (it overflowed a 4xl column) */}
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
-        <LeafStar live className="mx-auto h-12 w-12" />
-        <p className="bracket mt-8 text-star/80">[ Your next discovery starts here ]</p>
-        <h2 data-split className="display mt-6 text-6xl sm:text-8xl lg:text-9xl">
-          Explore with intention.
-          <br />
-          <em className="text-flare-soft">Find your Cosmos.</em>
-        </h2>
-        <p className="mx-auto mt-8 max-w-lg text-star/80">Join the waitlist for launch-day access and a first-order welcome gift.</p>
+        <h2 className="display mx-auto max-w-3xl text-4xl sm:text-5xl lg:text-6xl">The first batch ships the week of 11 December.</h2>
         <WaitlistForm size="lg" className="mx-auto mt-10 max-w-lg" />
+        <p className="mx-auto mt-4 max-w-md text-sm text-dust">We’ll email you the day it’s ready, with a gift on your first order.</p>
       </div>
     </section>
   );

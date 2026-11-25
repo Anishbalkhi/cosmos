@@ -58,8 +58,8 @@ export function ArticleCard({ article }: { article: Article }) {
   return (
     <Link href={`/journal/${article.slug}`} className="group flex h-full flex-col">
       <ArticleCover article={article} className="aspect-[3/4] rounded-[20px] transition-transform duration-700 ease-cosmic group-hover:-translate-y-2 group-hover:rotate-[-0.6deg]" />
-      <p className="bracket mt-5 text-dust">
-        [ {article.tag} ] {formatDate(article.date)} · {article.minutes} min
+      <p className="mt-5 text-sm text-dust">
+        {article.tag} · {formatDate(article.date)} · {article.minutes} min read
       </p>
       <p className="mt-2 text-sm text-dust">{article.excerpt}</p>
     </Link>

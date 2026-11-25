@@ -109,7 +109,7 @@ async function ProductPageContent({ params }: { params: PageProps<"/products/[sl
           </Reveal>
           <Reveal delay={150} className="mx-auto w-full max-w-sm">
             <div className="relative aspect-square [contain:layout]">
-              <div className="absolute inset-3 animate-spin-slow rounded-full border border-dashed border-white/15">
+              <div className="absolute inset-3 rounded-full border border-dashed border-white/15">
                 <span className="absolute top-1/2 -left-2 h-4 w-4 rounded-full" style={{ background: p.color, boxShadow: `0 0 24px ${p.color}` }} />
               </div>
               <div className="absolute inset-[12%] rounded-full" style={{ boxShadow: `0 0 120px ${p.color}55` }}>
@@ -150,7 +150,7 @@ async function ProductPageContent({ params }: { params: PageProps<"/products/[sl
         <Container>
           <p className="eyebrow mb-5">How to take it</p>
           <h2 className="display max-w-2xl text-4xl sm:text-5xl">
-            Start low, <em className="text-flare-soft">go slow.</em>
+            Start low, go slow.
           </h2>
           <DoseTimeline color={p.color} notes={p.howTo} />
         </Container>

@@ -81,7 +81,7 @@ export function CosmosToCell() {
           <div>
             <p className="eyebrow mb-4">Zoom in</p>
             <h2 id="c2c-title" className="display max-w-xl text-4xl sm:text-6xl">
-              From the cosmos <em className="text-flare-soft">to your cells.</em>
+              From the cosmos to your cells.
             </h2>
           </div>
 

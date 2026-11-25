@@ -1,4 +1,3 @@
-import { IconClock, IconDrop } from "@/components/ui/icons";
 
 // minutes along the track (0..150); these follow the shared how-to copy in lib/data.ts
 const MARKS = [
@@ -10,8 +9,7 @@ const MARKS = [
 const SPAN = 150;
 
 /**
- * "Start low, go slow" as a dose clock: a track from the first gummy to the two-hour mark, the
- * onset window shaded, and a comet travelling it on a loop. The written guidance follows below.
+ * "Start low, go slow" as a dose clock: a track from the first gummy to the two-hour mark, the onset window shaded. The written guidance follows below.
  */
 export function DoseTimeline({ color, notes }: { color: string; notes: string[] }) {
   return (
@@ -23,13 +21,6 @@ export function DoseTimeline({ color, notes }: { color: string; notes: string[] 
           className="absolute top-[1.85rem] h-[6px] rounded-full"
           style={{ left: `${(45 / SPAN) * 100}%`, width: `${(45 / SPAN) * 100}%`, background: `linear-gradient(90deg, transparent, ${color}66, transparent)` }}
         />
-        {/* the comet */}
-        <div className="absolute top-8 left-0 h-0 w-full">
-          <span
-            className="absolute -top-[5px] block h-[10px] w-[10px] animate-[dose-comet_7s_cubic-bezier(0.4,0,0.2,1)_infinite] rounded-full bg-star"
-            style={{ boxShadow: `0 0 14px 3px ${color}, -26px 0 18px -4px ${color}88` }}
-          />
-        </div>
         {MARKS.map((m) => (
           // the first mark hangs to the right of its tick so it never clips at the edge
           <div
@@ -51,9 +42,8 @@ export function DoseTimeline({ color, notes }: { color: string; notes: string[] 
           return (
             <li
               key={n}
-              className={`flex gap-3 rounded-2xl border p-4 text-sm leading-relaxed ${warn ? "border-[rgb(var(--accent-rgb)/0.35)] bg-[rgb(var(--accent-rgb)/0.06)] text-star/90 sm:col-span-2" : "border-line text-star/80"}`}
+              className={`rounded-2xl border p-4 text-sm leading-relaxed ${warn ? "border-[rgb(var(--accent-rgb)/0.35)] bg-[rgb(var(--accent-rgb)/0.06)] text-star/90 sm:col-span-2" : "border-line text-star/80"}`}
             >
-              {warn ? <IconDrop className="mt-0.5 h-4 w-4 shrink-0 text-flare" /> : <IconClock className="mt-0.5 h-4 w-4 shrink-0 text-dust" />}
               {n}
             </li>
           );

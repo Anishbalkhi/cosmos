@@ -8,7 +8,7 @@ const N = 160;
 type Mote = { x: number; y: number; z: number; seed: number; px: number; py: number };
 
 /**
- * Star dust across the whole home page, just in front of the shared sky and behind the content: motes in 3D drifting toward you, faster when
+ * Star dust over the opening of the home page (hero to the Needs wheel; lib/journey.ts sets it to 0 after), just in front of the shared sky and behind the content: motes in 3D drifting toward you, faster when
  * you scroll fast (and drawn as short streaks then), rising past as you go down, tinted by the
  * current stop. It is the one layer that never changes from section to section except in colour and
  * pace, which is what makes the page read as one flight. Canvas 2D, a few hundred dots a frame.
@@ -77,6 +77,7 @@ export function StarDust() {
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
+      if (shown === 0) return; // off from the Range down: the dust belongs to the opening flight
       ctx.globalCompositeOperation = "lighter";
       ctx.lineCap = "round";
       const cx = w / 2, cy = h / 2;

@@ -11,24 +11,26 @@ const POST: PostSettings = { threshold: 0.95, bloom: 0.5, streak: 0.22, aberrati
  * Cosmos mark, held up against a star so light comes through the blade. A lab scan line
  * sweeps down it every few seconds. Feathered edges so it sits in the page, not in a box.
  */
-export function LeafScene({ className }: { className?: string }) {
+export function LeafScene({ className, labels = true }: { className?: string; labels?: boolean }) {
   return (
     <div className={clsx("relative", className)}>
       <div className="absolute inset-0 [mask-image:radial-gradient(closest-side,#000_72%,transparent)]">
         <ShaderCanvas frag={leafFrag} post={POST} scale={0.9} maxDpr={1.75} />
       </div>
-      <div aria-hidden className="pointer-events-none absolute inset-0 font-mono text-[10px] tracking-[0.18em] uppercase sm:text-[11px]">
-        <p className="absolute top-[20%] right-[14%] text-right text-dust">
-          Fan leaf · 7 leaflets
-          <br />
-          <span className="text-leaf">What we use</span>
-        </p>
-        <p className="absolute bottom-[24%] left-[16%] text-dust">
-          Every batch
-          <br />
-          <span className="text-leaf">Lab scanned</span>
-        </p>
-      </div>
+      {labels && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 font-mono text-[10px] tracking-[0.18em] uppercase sm:text-[11px]">
+          <p className="absolute top-[20%] right-[14%] text-right text-dust">
+            Fan leaf · 7 leaflets
+            <br />
+            <span className="text-leaf">What we use</span>
+          </p>
+          <p className="absolute bottom-[24%] left-[16%] text-dust">
+            Every batch
+            <br />
+            <span className="text-leaf">Lab scanned</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

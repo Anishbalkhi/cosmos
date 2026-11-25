@@ -3,40 +3,24 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { ClosingCta } from "@/components/home/ClosingCta";
-import { ZoomThrough, type ZoomStop } from "@/components/space/ZoomThrough";
-import { Planet, type PlanetName } from "@/components/space/Planet";
+import { Planet } from "@/components/space/Planet";
 import { LeafStar } from "@/components/brand/LeafStar";
 
 export const metadata: Metadata = { title: "Our Story", description: "Why we started Cosmos: to end the whispering around cannabis wellness." };
 
-const PILLARS: ZoomStop[] = [
-  {
-    planet: "earth",
-    glow: "rgba(120,170,255,0.4)",
-    title: "The Vision",
-    body: "We built Cosmos to end the whispering. Cannabis wellness deserves daylight, design and rigour, not stigma.",
-  },
-  {
-    planet: "jupiter",
-    glow: "rgba(232,184,109,0.35)",
-    title: "The Craft",
-    body: "Every gummy is lab-tested, precisely dosed and clearly labelled. The care of a fine pharmacy, the taste of a maison.",
-  },
-  {
-    planet: "neptune",
-    glow: "rgba(110,150,255,0.45)",
-    title: "The Cure",
-    body: "Rest, balance, focus, ease. One belief: the right dose at the right moment is a quiet kind of medicine.",
-  },
+// three ideas, as plain statements (they were a zoom through three planets: decoration, not meaning)
+const PILLARS = [
+  { title: "Out in the open", body: "Cannabis wellness shouldn’t be whispered about. We publish what’s in every gummy and the lab report for every batch." },
+  { title: "Made with care", body: "Each gummy is lab-tested, dosed to 5 mg and clearly labelled, with the standards you’d expect from a good pharmacy." },
+  { title: "One job each", body: "Rest, balance and focus are separate formulas, so you take what you need, at the dose you need, and nothing else." },
 ];
 
-// each principle gets a world (real NASA photographs): the Moon reflects light as it is, Earth is
-// where the plant grows, Saturn's rings are the most considered design in the system, Mars is tested ground
-const VALUES: { n: string; title: string; body: string; planet: PlanetName; glow: string }[] = [
-  { n: "01", title: "Honest information", body: "What’s in it, how much, and what it will and won’t do. No miracle claims.", planet: "moon", glow: "rgba(246,220,174,0.25)" },
-  { n: "02", title: "Respect for the plant", body: "Leaf only, harvested before flowering, the way Ayurveda has used it for centuries.", planet: "earth", glow: "rgba(120,170,255,0.35)" },
-  { n: "03", title: "Design as care", body: "A product you’re not embarrassed to leave on the bedside table.", planet: "saturn", glow: "rgba(232,184,109,0.3)" },
-  { n: "04", title: "Rigour", body: "Independent lab tests on every batch, published for anyone to read.", planet: "mars", glow: "rgba(255,130,90,0.3)" },
+// four principles as plain statements (they were cards with a planet each: decoration, not meaning)
+const VALUES = [
+  { title: "Honest information", body: "What’s in it, how much, and what it will and won’t do. No miracle claims." },
+  { title: "Respect for the plant", body: "Leaf only, harvested before flowering, the way Ayurveda has used it for centuries." },
+  { title: "Design as care", body: "A product you’re not embarrassed to leave on the bedside table." },
+  { title: "Rigour", body: "Independent lab tests on every batch, published for anyone to read." },
 ];
 
 export default function StoryPage() {
@@ -53,8 +37,20 @@ export default function StoryPage() {
         intro="We named the brand Cosmos for that out-of-this-world feeling: knowing there is life beyond the noise of everyday society. When you focus on yourself and clear the junk from mind and body, Cosmos is here to help you build, enlighten and grow."
       />
 
-      {/* the three pillars as a flight through worlds (reference pin 880313058437018020) */}
-      <ZoomThrough eyebrow="Three ideas, one cosmos" stops={PILLARS} />
+      {/* three ideas behind the brand */}
+      <section className="border-y border-line py-20 sm:py-24">
+        <Container>
+          <p className="eyebrow">What we believe</p>
+          <div className="mt-10 grid gap-10 md:grid-cols-3 md:gap-12">
+            {PILLARS.map((p, i) => (
+              <Reveal key={p.title} delay={i * 100}>
+                <h2 className="display text-3xl sm:text-4xl">{p.title}</h2>
+                <p className="mt-4 leading-relaxed text-dust">{p.body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
 
       {/* the founders' note as a transmission from Earth */}
       <section className="relative overflow-hidden border-y border-line py-24 sm:py-32">
@@ -71,7 +67,7 @@ export default function StoryPage() {
             <Planet name="earth" shade="soft" glow="rgba(120,170,255,0.4)" className="absolute inset-[18%]" sizes="320px" />
           </div>
           <Reveal>
-            <p className="font-mono text-[11px] tracking-[0.18em] text-flare-soft uppercase">[ Transmission · Bangalore · from the founders ]</p>
+            <p className="eyebrow text-flare-soft">From the founders, Bangalore</p>
             <h2 className="display mt-5 text-4xl sm:text-5xl">Why we built this</h2>
             <div className="mt-8 space-y-6 font-[family-name:var(--font-instrument)] text-2xl leading-snug text-star/90 sm:text-[1.7rem]">
               {/* PLACEHOLDER: founders' letter from the client */}
@@ -99,29 +95,14 @@ export default function StoryPage() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dust">
             A culture of care and curiosity: respect for the plant, honest information and a more human way to explore cannabis.
           </p>
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {VALUES.map((v, i) => (
-              <Reveal key={v.n} delay={i * 100} className="h-full">
-                <article
-                  data-tilt
-                  className="group grain relative flex h-full min-h-[22rem] flex-col justify-end overflow-hidden rounded-[28px] border border-line bg-space-2 p-7 transition-colors duration-500 hover:border-white/25"
-                >
-                  <div
-                    aria-hidden
-                    className={`pointer-events-none absolute -top-[18%] -right-[28%] w-[95%] transition-transform duration-[1.4s] ease-cosmic group-hover:scale-105 group-hover:-rotate-6`}
-                  >
-                    <Planet name={v.planet} shade="side" glow={v.glow} sizes="300px" />
-                  </div>
-                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-space-2 via-space-2/70 to-transparent" />
-                  <div className="relative">
-                    <p className="font-mono text-xs tracking-[0.18em] text-flare">{v.n}</p>
-                    <h3 className="display mt-3 text-3xl">{v.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-star/75">{v.body}</p>
-                  </div>
-                </article>
-              </Reveal>
+          <dl className="mt-12 grid border-t border-line sm:grid-cols-2 sm:gap-x-12">
+            {VALUES.map((v) => (
+              <div key={v.title} className="border-b border-line py-6">
+                <dt className="text-lg font-semibold">{v.title}</dt>
+                <dd className="mt-2 max-w-md leading-relaxed text-dust">{v.body}</dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </Container>
       </section>
 

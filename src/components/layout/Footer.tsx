@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PREVIEW } from "@/components/ui/Placeholder";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { Suspense } from "react";
 import { FooterJoinActive, FooterJoinFallback } from "./FooterJoin";
@@ -41,9 +42,8 @@ const POLICIES = [
   { href: "/policies/refund", label: "Refunds" },
 ];
 
-// the brand colour switch and the placeholder note are for the client's review, not for customers:
-// shown in development, or in a production build only with NEXT_PUBLIC_PREVIEW_NOTES=1
-const SHOW_PREVIEW_NOTES = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_PREVIEW_NOTES === "1";
+// the brand colour switch and the placeholder note are for the client's review, not for customers
+const SHOW_PREVIEW_NOTES = PREVIEW;
 
 export function Footer() {
   return (

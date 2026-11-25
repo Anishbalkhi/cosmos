@@ -160,7 +160,7 @@ export function NeedsWheel() {
             aria-hidden
           >
             <div className="relative h-full w-full">
-              <div className="absolute inset-0 animate-spin-slow [animation-duration:240s]">
+              <div className="absolute inset-0">
                 <Planet name={WORLD[n.id].planet} className="h-full w-full" sizes="860px" eager />
               </div>
               {/* lit from above, atmosphere at the limb */}
@@ -178,12 +178,12 @@ export function NeedsWheel() {
 
         {/* title block: the old need leaves quickly, then the new one rises in (never two words on top of each other) */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-5 pt-24 text-center sm:pt-28">
-          <p className="eyebrow">Find your orbit</p>
+          <p className="eyebrow">Choose by need</p>
           <h2 id="orbit-title" className="sr-only">
             What do you need more of?
           </h2>
           <p className="mt-3 font-mono text-xs tracking-[0.18em] text-dust" aria-hidden>
-            What do you need more of? · {String(active + 1).padStart(2, "0")} / {String(N).padStart(2, "0")}
+            What do you need more of? {active + 1} of {N}
           </p>
           <div className="relative mt-4 sm:mt-6">
             {needs.map((n, i) => {

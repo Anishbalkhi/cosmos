@@ -30,7 +30,7 @@ export function CartView() {
     <Container className="py-14 sm:py-20">
       <p className="eyebrow mb-4">Your cart</p>
       <h1 className="display text-5xl sm:text-6xl">
-        {t.count} {t.count === 1 ? "item" : "items"} <em className="text-flare-soft">in orbit</em>
+        {t.count} {t.count === 1 ? "item" : "items"}
       </h1>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-12">

@@ -1,3 +1,4 @@
+import { Placeholder } from "@/components/ui/Placeholder";
 import { tone } from "@/lib/data";
 import clsx from "clsx";
 import { LeafStar } from "@/components/brand/LeafStar";
@@ -9,12 +10,12 @@ const TESTS = [
   { name: "Microbial", note: "Yeast, mould and bacteria" },
 ];
 
-/** A seal that turns slowly: "lab tested · every batch" round the Cosmos mark. */
+/** A still seal: "lab tested · every batch" round the Cosmos mark. */
 export function LabSeal({ id = "seal", className, color = "var(--color-flare)" }: { id?: string; className?: string; color?: string }) {
   const ring = `${id}-ring`;
   return (
     <div className={clsx("relative aspect-square", className)} aria-hidden>
-      <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full animate-[spin_40s_linear_infinite]">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
         <defs>
           <path id={ring} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
         </defs>
@@ -45,8 +46,8 @@ export function LabCertificate({ batch, coaUrl, color, compact = false }: { batc
       <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full blur-3xl" style={{ background: `${color}22` }} />
       <LabSeal id={`seal-${batch}`} className={compact ? "mb-5 w-20" : "mx-auto w-36 sm:w-44"} color={color} />
       <div className="relative">
-        <p className="font-mono text-[11px] tracking-[0.18em] text-dust uppercase">{compact ? "Certificate of analysis" : "Certificate of analysis · NABL-accredited lab"}</p>
-        <p className={clsx("mt-3 font-mono tracking-[0.04em] whitespace-nowrap text-star", compact ? "text-xl" : "text-3xl sm:text-4xl")}>Batch {batch}</p>
+        <p className="font-mono text-[11px] tracking-[0.18em] text-dust uppercase">{compact ? "Certificate of analysis" : <>Certificate of analysis<Placeholder note="lab accreditation"> · NABL-accredited lab</Placeholder></>}</p>
+        <p className={clsx("mt-3 font-mono tracking-[0.04em] whitespace-nowrap text-star", compact ? "text-xl" : "text-3xl sm:text-4xl")}>Batch <Placeholder note="batch code" fallback="at launch">{batch}</Placeholder></p>
         <ul className={clsx("mt-6 grid gap-3", !compact && "lg:grid-cols-3")}>
           {TESTS.map((t) => (
             <li key={t.name} className="flex items-start justify-between gap-3 rounded-2xl border border-line bg-black/30 px-4 py-3 lg:flex-col">

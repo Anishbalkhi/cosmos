@@ -48,20 +48,6 @@ export function IngredientOrbit({ slug }: { slug: string }) {
             return (
               <g key={i}>
                 <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(243 238 230 / 0.12)" strokeWidth="0.25" />
-                {/* a glint running round each ring, each at its own pace */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r={r}
-                  fill="none"
-                  stroke={p.color}
-                  strokeOpacity="0.7"
-                  strokeWidth="0.45"
-                  strokeLinecap="round"
-                  strokeDasharray={`${r * 0.5} ${r * 6.3}`}
-                  className="origin-center animate-spin"
-                  style={{ animationDuration: `${14 + i * 7}s`, animationDirection: i % 2 ? "reverse" : "normal" }}
-                />
                 <circle cx={x} cy={y} r="3.6" fill="var(--color-ink)" stroke={tone(p.color)} strokeWidth="0.5" />
                 <circle cx={x} cy={y} r="5.5" fill={p.color} opacity="0.12" />
                 <text x={x} y={y + 1.25} textAnchor="middle" fontSize="3.4" fill="var(--color-star)" fontFamily="var(--font-geist-mono)">

@@ -72,8 +72,8 @@ export function PageHeader({
         </div>
       )}
       <Container>
-        <p className="bracket mb-6 text-flare-soft">[ {eyebrow} ]</p>
-        <h1 data-split className="display max-w-4xl text-5xl sm:text-7xl lg:text-8xl">
+        <p className="eyebrow mb-6 text-flare-soft">{eyebrow}</p>
+        <h1 className="display max-w-4xl text-5xl sm:text-7xl lg:text-8xl">
           {title}
         </h1>
         {intro && (

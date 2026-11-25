@@ -4,8 +4,8 @@ import { AddToCartButton } from "@/components/product/AddToCart";
 import { PouchThumb } from "./CommerceBits";
 
 /**
- * Empty cart / nothing to check out: an empty orbit (rings with nothing on them but the formulas'
- * colours circling) and the three formulas to start from, each one tap from the cart.
+ * Empty cart / nothing to check out: an empty orbit (still rings with nothing on them but a dot
+ * in each formula's colour) and the three formulas to start from, each one tap from the cart.
  */
 export function EmptyOrbit({ title }: { title: string }) {
   return (
@@ -16,8 +16,8 @@ export function EmptyOrbit({ title }: { title: string }) {
         {products.map((p, i) => (
           <div
             key={p.slug}
-            className="absolute rounded-full border border-white/10 animate-spin"
-            style={{ inset: `${8 + i * 11}%`, animationDuration: `${22 + i * 9}s`, animationDirection: i % 2 ? "reverse" : "normal" }}
+            className="absolute rounded-full border border-white/10"
+            style={{ inset: `${8 + i * 11}%`, rotate: `${i * 130 - 40}deg` }}
           >
             <span
               className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full"

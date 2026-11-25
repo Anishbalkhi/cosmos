@@ -9,12 +9,12 @@ export function TheRange() {
     <section className="pt-24 pb-12 sm:pt-32 sm:pb-16">
       <Container>
         <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-end">
-          <SectionHeading eyebrow="The range" title="Three formulas. One belief." intro="The right dose at the right moment is a quiet kind of medicine." />
+          <SectionHeading eyebrow="The range" title="Three gummies. Pick by need." />
           <ButtonLink href="/shop" variant="ghost" arrow className="shrink-0">
             Shop all
           </ButtonLink>
         </div>
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
           {products.map((p, i) => (
             <Reveal key={p.slug} delay={i * 120}>
               <ProductCard product={p} index={i} />

@@ -2,7 +2,6 @@ import clsx from "clsx";
 import type { Product } from "@/lib/data";
 import { inr, site } from "@/lib/data";
 import { Pouch } from "@/components/product/Pouch";
-import { IconBox, IconFlask, IconLock } from "@/components/ui/icons";
 
 /** A pouch on a tile lit in its formula's colour (the 3D scene is too heavy for lists). */
 export function PouchThumb({ product, id, className }: { product: Product; id: string; className?: string }) {
@@ -44,22 +43,11 @@ export function ShippingProgress({ subtotal }: { subtotal: number }) {
   );
 }
 
-const TRUST = [
-  { icon: IconFlask, label: "Lab-tested batch" },
-  { icon: IconBox, label: "Discreet plain box" },
-  { icon: IconLock, label: "Secure payment" },
-];
-
-/** Three reasons to feel fine about paying, under the summary. */
+/** Why it's fine to pay, as one sentence under the summary (it was three icon tiles). */
 export function TrustRow({ className }: { className?: string }) {
   return (
-    <ul className={clsx("grid grid-cols-3 gap-2 text-center", className)}>
-      {TRUST.map(({ icon: Icon, label }) => (
-        <li key={label} className="rounded-2xl border border-line bg-black/30 px-2 py-3">
-          <Icon className="mx-auto h-5 w-5 text-flare-soft" />
-          <p className="mt-2 font-mono text-[10px] leading-snug tracking-[0.1em] text-dust uppercase">{label}</p>
-        </li>
-      ))}
-    </ul>
+    <p className={clsx("text-sm leading-relaxed text-dust", className)}>
+      Every batch is tested by an independent lab. It ships in a plain outer box, and payment is handled securely by our provider.
+    </p>
   );
 }

@@ -114,16 +114,18 @@ and raw WebGL shaders for the space scenes. No React Native or SwiftUI engine he
 **What lives, and how:**
 - `LeafStar` with `live`: each of the seven leaflets sways around the point where they meet (the stem), 1.4–2.4°
   (longer leaflets more), periods 3.6–5.2 s, phases seeded by index. Tokens: `SWAY` in `LeafStar.tsx`; keyframes
-  `leaf-sway` in `globals.css`. Used on the closing call to action and the order confirmation: the mark as artwork.
-- Trust-badge icons (`ProofMarquee`, wrapped in `DrawOn`): strokes draw on once, 1.1 s ease-out, 70 ms apart, the
-  first time the strip is 40% in view. Then they rest.
+  `leaf-sway` in `globals.css`. Used on the order confirmation: the mark as artwork.
+
+**One glowing or moving thing per screen** (phase 3): the hero's black hole, the Manifesto, the shared sky, the
+Needs wheel turning on scroll, the dose clock filling once. Star dust stops after the Needs wheel. Headings no
+longer rise word by word (only the hero animates its type); orbit rings, the lab seal and planet photos don't spin.
 
 **Kept still on purpose:**
 - The leaf in the header wordmark, the intro's small mark, the founders' signature and the lab seal: chrome or
   small marks people see often.
 - Icons everywhere else (cart, checkout, product pages): interface, used often.
 
-**Reduced motion:** the sway stops at the drawing's rest pose; the icons show fully drawn.
+**Reduced motion:** the sway stops at the drawing's rest pose.
 
 **Owner's rules (from the build so far):** real NASA photographs only, never drawn planet spheres; no Blender;
 nothing that teleports or pops. The home page is one continuous journey (`lib/journey.ts`): scroll scenes belong
