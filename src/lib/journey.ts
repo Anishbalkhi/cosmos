@@ -80,15 +80,25 @@ export const STOPS: Stop[] = [
   // 7 journal: the pole star, the deepest night, in the empty left margin (clear of the header and the cover)
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.008, split: 0, arc: 0, arcAng: 0, color: [0.85, 0.9, 1], intensity: 2.2,
     skyTop: [0.002, 0.003, 0.01], skyLow: [0.008, 0.012, 0.03], neb: [0.015, 0.02, 0.05], dust: [0.82, 0.88, 1], dustDensity: 0, dustSpeed: 0.6, mw: 0.7, veil: [[0.34, 0.44, 1.0], [0.55, 0.34, 0.9]] },
-  // 8 closing: the section paints its own sunrise over Earth; the shared light simply goes out
+  // 8 closing: the section paints its own eclipse (Earth across the Sun); the shared light goes out and the sky
+  // stays night-dark around it (it was a warm dawn for the old sunrise)
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [1, 0.75, 0.45], intensity: 0,
-    skyTop: [0.01, 0.01, 0.03], skyLow: [0.08, 0.05, 0.05], neb: [0.05, 0.03, 0.04], dust: [1, 0.85, 0.65], dustDensity: 0, dustSpeed: 0.6, stars: 0.8, accent: true, veil: [[1.0, 0.6, 0.45], [0.5, 0.45, 0.95]] },
+    skyTop: [0.01, 0.01, 0.03], skyLow: [0.03, 0.022, 0.035], neb: [0.025, 0.02, 0.035], dust: [1, 0.85, 0.65], dustDensity: 0, dustSpeed: 0.6, stars: 0.8, accent: true, veil: [[0.6, 0.45, 0.7], [0.4, 0.42, 0.85]] },
   // 9 footer: the light is gone, only dark sky and a little dust
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [1, 0.75, 0.45], intensity: 0,
     skyTop: [0.004, 0.004, 0.008], skyLow: [0.006, 0.006, 0.012], neb: [0.01, 0.01, 0.015], dust: [0.9, 0.88, 0.85], dustDensity: 0, dustSpeed: 0.4, stars: 0.4, mw: 0.15 },
 ];
 
 export const LAST = STOPS.length - 1;
+
+// The far sky rolls slowly as you go down the page, like a camera turning on its axis (reference: an
+// edge-on galaxy tilting ~15° over a few seconds): the Milky Way and the still stars swing a few degrees
+// per section, so the same sky never sits at the same angle twice. Radians, per stop. 0 at the hero and
+// the Manifesto, which stay exactly as they are.
+const ROLL = [0, 0, 0.05, 0.13, 0.2, 0.25, 0.29, 0.35, 0.41, 0.44];
+// A film grade, warm cream in the highlights and teal in the shadows (reference: Interstellar's look),
+// 0..1 per stop: off at the hero and the Manifesto, eased in from the Needs wheel down.
+const GRADE = [0, 0, 0.45, 1, 1, 1, 1, 1, 1, 0.7];
 const NO_VEIL: [Rgb, Rgb] = [[0.32, 0.42, 1.0], [0.62, 0.36, 0.95]];
 
 const mix = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -99,7 +109,7 @@ const smooth = (lo: number, hi: number, x: number) => {
 };
 
 /** the stop keyframes blended at journey value t (0..9) */
-export function stopAt(t: number): Stop & { veilAmt: number; accentAmt: number } {
+export function stopAt(t: number): Stop & { veilAmt: number; accentAmt: number; roll: number; grade: number } {
   const c = Math.min(LAST, Math.max(0, t));
   const i = Math.min(LAST - 1, Math.floor(c));
   const k = c - i;
@@ -128,6 +138,9 @@ export function stopAt(t: number): Stop & { veilAmt: number; accentAmt: number }
     /** 0..1: how present the veils are (they fade in across the seam into the Needs section, out at the footer) */
     veilAmt: mix(a.veil ? 1 : 0, b.veil ? 1 : 0, k),
     accentAmt: mix(a.accent ? 1 : 0, b.accent ? 1 : 0, k),
+    // leaving the Manifesto they wait for the second half of the seam, so the Manifesto itself never changes
+    roll: mix(ROLL[i], ROLL[i + 1], i < 2 ? smooth(0.5, 1, k) : smooth(0, 1, k)),
+    grade: mix(GRADE[i], GRADE[i + 1], i < 2 ? smooth(0.5, 1, k) : k),
   };
 }
 

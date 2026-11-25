@@ -19,6 +19,8 @@ uniform float uStars;    // how bright the star field is at this stop (it thins 
 uniform float uMW;       // how strong the Milky Way is at this stop
 uniform vec3 uVeilA; uniform vec3 uVeilB;   // the nebula veils' two tints at this stop
 uniform float uVeil;     // 0..1: how present the veils are
+uniform float uRoll;     // the far sky's roll (radians): the Milky Way and still stars turn a little per section
+uniform float uGrade;    // 0..1: the cream-highlight / teal-shadow film grade
 
 float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
 float vnoise(vec2 p){
@@ -131,7 +133,8 @@ void main(){
   }
 
   // the Milky Way, drifting slowly up as the page goes down (far away: it barely moves)
-  vec2 mp = uv + vec2(0.0, uScroll * 0.05);
+  float cr = cos(uRoll), sr = sin(uRoll);
+  vec2 mp = mat2(cr, sr, -sr, cr) * uv + vec2(0.0, uScroll * 0.05);
   vec4 mw = milkyWay(mp);
   col += mw.rgb * 0.12 * uMW;
 
@@ -168,6 +171,17 @@ void main(){
     float l = lightShape(q, uBShape, uBLine, uBAng);
     if (uBLine.y > 0.01) l += (lightShape(q - vec2(off, 0.0), uBShape, uBLine, uBAng) + lightShape(q + vec2(off, 0.0), uBShape, uBLine, uBAng)) * uBLine.y;
     col += uBCol * l * uBInt * uLMix;
+  }
+
+  // film grade: the darkest sky leans teal, the bright light and stars lean warm cream; luminance kept
+  if (uGrade > 0.001) {
+    float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    float sh = 1.0 - smoothstep(0.0, 0.06, l);
+    float hi = smoothstep(0.08, 0.9, l);
+    vec3 g = mix(vec3(1.0), vec3(0.82, 1.02, 1.1), sh) * mix(vec3(1.0), vec3(1.08, 1.0, 0.82), hi);
+    vec3 graded = col * g;
+    graded *= l / max(dot(graded, vec3(0.2126, 0.7152, 0.0722)), 1e-5);
+    col = mix(col, graded, uGrade);
   }
 
 #ifndef HDR

@@ -8,6 +8,7 @@ import { JournalTeaser } from "@/components/home/JournalTeaser";
 import { ClosingCta } from "@/components/home/ClosingCta";
 import { UniverseStage } from "@/components/journey/UniverseStage";
 import { StarDust } from "@/components/journey/StarDust";
+import { FlyBys } from "@/components/journey/FlyBys";
 
 // One voyage, following the light: every section is a stop (data-stop) on a single journey
 // (lib/journey.ts). One sky sits behind them all and one layer of star dust in front; the sections
@@ -43,6 +44,7 @@ export default function Home() {
       <div data-stop="8">
         <ClosingCta />
       </div>
+      <FlyBys />
       <StarDust />
     </>
   );

@@ -93,7 +93,7 @@ export function Footer() {
               For adults 18+. Made from Cannabis sativa leaf extract under licence.
             </p>
             <p>These products are not intended to diagnose, treat, cure or prevent any disease. Consult your doctor before use.</p>
-            <p className="text-dust/70">Planet imagery: NASA (SDO, Apollo 17, LRO, Viking, Hubble, Cassini, Voyager 2), public domain.</p>
+            <p className="text-dust/70">Space imagery: NASA (SDO, Apollo 17, LRO, Viking, Hubble, Cassini, Voyager 2, Suomi NPP Black Marble) and NASA/ESA Hubble Orion mosaic (M. Robberto), public domain.</p>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
             <ul className="flex flex-wrap gap-x-5 gap-y-2 font-mono text-[11px] tracking-[0.14em] uppercase">

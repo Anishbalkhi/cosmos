@@ -3,8 +3,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { ClosingCta } from "@/components/home/ClosingCta";
-import { Planet } from "@/components/space/Planet";
 import { LeafStar } from "@/components/brand/LeafStar";
+import { EarthPhase } from "@/components/space/EarthPhase";
 
 export const metadata: Metadata = { title: "Our Story", description: "Why we started Cosmos: to end the whispering around cannabis wellness." };
 
@@ -52,20 +52,10 @@ export default function StoryPage() {
         </Container>
       </section>
 
-      {/* the founders' note as a transmission from Earth */}
+      {/* the founders' note beside Earth turning from night to day as you read */}
       <section className="relative overflow-hidden border-y border-line py-24 sm:py-32">
         <Container className="grid items-center gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div className="relative mx-auto aspect-square w-full max-w-[24rem]" aria-hidden>
-            {/* signal rings leaving the planet */}
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="absolute inset-[18%] rounded-full border border-[rgb(var(--accent-rgb)/0.45)] animate-[signal_4.5s_ease-out_infinite]"
-                style={{ animationDelay: `${i * 1.5}s` }}
-              />
-            ))}
-            <Planet name="earth" shade="soft" glow="rgba(120,170,255,0.4)" className="absolute inset-[18%]" sizes="320px" />
-          </div>
+          <EarthPhase className="mx-auto w-full max-w-[19rem] sm:max-w-[22rem]" />
           <Reveal>
             <p className="eyebrow text-flare-soft">From the founders, Bangalore</p>
             <h2 className="display mt-5 text-4xl sm:text-5xl">Why we built this</h2>

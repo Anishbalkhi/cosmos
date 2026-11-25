@@ -312,61 +312,65 @@ void main(){
   gl_FragColor = finish(col);
 }`;
 
-/**
- * Closing call to action: sunrise seen from orbit. A real photograph of Earth (uEarth, Apollo 17)
- * forms a huge curved horizon low in the frame; its night side stays dark, a thin atmosphere glows
- * along the limb, and the sun climbs over the edge as the section scrolls in (uRise 0..1), throwing
- * a soft fan of rays into the dark above the headline.
- */
-export const dawnFrag = /* glsl */ `
+// The closing section: Earth rises across the Sun as the section scrolls in, until only the corona and a
+// gold ring of sunlight through Earth's atmosphere are left (references: "Univers", where Jupiter covers
+// the Sun and the frame dims by ~45% in about a second, leaving an orange rim; NASA's Earthrise). The
+// planet is the NASA photograph on its night side. uRise: 0 as the section enters, 1 once it has settled.
+export const eclipseFrag = /* glsl */ `
 ${common}
 ${finish}
 uniform sampler2D uEarth;
 uniform float uRise;
 void main(){
   vec2 uv = screenUv();
-  const float R = 2.1;
-  // the limb sits 0.2 above the bottom edge whatever the shape (on a tall phone section the centre
-  // would put the planet behind the form); on a landscape screen that is y = -0.3
-  float limbY = -0.5 * uRes.y / min(uRes.x, uRes.y) + 0.2 + 0.14 * clamp(uRes.y / uRes.x - 1.0, 0.0, 1.0);
-  vec2 c = vec2(0.0, limbY - R);
-  vec2 d = (uv - c) / R;
-  float r = length(d);
-  float h = (r - 1.0) * R;                             // height above the limb, in uv
-  vec2 sun = vec2(0.0, limbY + mix(-0.05, 0.03, uRise));
-  float sd = length(uv - sun);
-  float toward = exp(-sq(uv.x - sun.x) / 0.5);         // light gathers where the sun breaks through
-
-  // space: stars that fade as the dawn brightens
-  vec3 col = vec3(0.003, 0.004, 0.009);
-  col += vec3(stars(uv + 1.7, 60.0) * 0.7 + stars(uv * 1.6 + 4.0, 90.0) * 0.4) * (1.0 - 0.6 * uRise * toward);
-
   float px = 1.0 / min(uRes.x, uRes.y);
-  float hs = max(h, 0.0);
-  // the atmosphere: a thin glowing shell, blue far from the sun, gold where it breaks through.
-  // Computed on both sides of the limb, so the planet's anti-aliased edge blends into it (no dark seam).
-  vec3 atm = mix(vec3(0.28, 0.52, 1.0), vec3(1.0, 0.68, 0.38), toward * 0.85);
-  // (wide enough to stay smooth at render scale: a sub-pixel band aliased into a dotted line)
-  col += atm * exp(-hs / max(0.016, 4.0 * px)) * (0.25 + 1.6 * toward * uRise);
-  col += atm * exp(-hs / 0.07) * 0.22 * (0.4 + toward * uRise);
+  float tall = clamp(uRes.y / uRes.x - 1.0, 0.0, 1.0);
+  float bottom = -0.5 * uRes.y / min(uRes.x, uRes.y);
+  // the Sun sits low in the section, under the form; a tall phone section needs it a little higher
+  vec2 sun = vec2(0.0, bottom + 0.27 + 0.12 * tall);
+  const float rs = 0.042;
+  const float R = 0.46;
+  // Earth comes up from below, a little from the left; at e = 1 the Sun is 0.035 behind its limb
+  float e = smoothstep(0.08, 0.86, uRise);
+  vec2 dir = normalize(vec2(-0.16, -1.0));
+  vec2 ec = sun + dir * mix(R + rs + 0.08, R - rs - 0.035, e);
+  vec2 d = uv - ec;
+  float r = length(d);
+  float h = r - R;                                     // height above Earth's limb
+  float hc = length(sun - ec) - R;                     // the Sun's centre above the limb
+  float vis = clamp((hc + rs) / (2.0 * rs), 0.0, 1.0); // how much of the Sun still shows
+  float sd = length(uv - sun);
+  float above = smoothstep(-1.5 * px, 1.5 * px, h);
 
-  if (h > 0.0) {
-    // the sun and its glow, only above the horizon
-    col += vec3(1.0, 0.97, 0.9) * 10.0 * exp(-sd * sd / 0.00035) * uRise;
-    col += vec3(1.0, 0.8, 0.52) * (0.9 * exp(-sd / 0.05) + 0.22 * exp(-sd / 0.28)) * (0.25 + 0.75 * uRise);
-    // a soft fan of rays climbing from the sun
-    float ang = atan(uv.x - sun.x, uv.y - sun.y);
-    float fan = pow(0.5 + 0.5 * sin(ang * 26.0 + 3.0 * noise(vec2(ang * 5.0, uTime * 0.08))), 5.0);
-    col += vec3(1.0, 0.82, 0.58) * fan * exp(-sd / 0.4) * 0.08 * uRise * smoothstep(-0.2, 0.6, uv.y + 0.3);
-  } else {
-    // the planet: the photograph, on its night side, with a thin lit crescent along the limb
-    // (sampled a little inside the photo's disc: its very edge is the transparent cut-out)
-    vec3 tx = texture2D(uEarth, d * 0.42 + 0.5).rgb;
-    float limb = smoothstep(-0.06, 0.0, h);
-    float lit = limb * limb * (0.06 + 0.8 * toward * uRise) + 0.022;
-    vec3 surf = tx * lit + vec3(0.2, 0.4, 0.9) * 0.07 * limb;
-    surf += vec3(1.0, 0.72, 0.4) * exp(h / 0.005) * toward * uRise * 0.7;   // the bright rim right at the edge
-    col = mix(col, surf, 1.0 - smoothstep(-2.0 * px, 0.0, h));           // anti-aliased edge against the glow
+  // space, its stars washed out near a bright Sun
+  vec3 col = vec3(0.003, 0.004, 0.009);
+  col += vec3(stars(uv + 1.7, 60.0) * 0.7 + stars(uv * 1.6 + 4.0, 90.0) * 0.4) * (1.0 - 0.8 * vis * exp(-sd / 0.5));
+
+  // the corona: streaky, always there, only seen where Earth isn't in front
+  float ang = atan(uv.x - sun.x, uv.y - sun.y);
+  float streak = 0.65 + 0.35 * pow(0.5 + 0.5 * sin(ang * 9.0 + 2.0 * noise(vec2(ang * 3.0, uTime * 0.05))), 3.0);
+  float cor = exp(-max(sd - rs, 0.0) / 0.035) * 0.9 + exp(-sd / 0.16) * 0.22 * streak;
+  col += vec3(1.0, 0.86, 0.66) * cor * above * (0.55 + 0.45 * vis);
+
+  // the Sun's disc and its glare, fading as Earth covers it (the last sliver blooms into a bead)
+  float disc = smoothstep(rs, rs - 2.0 * px, sd) * above;
+  col += vec3(1.0, 0.97, 0.9) * 12.0 * disc;
+  float glare = pow(vis, 1.5);
+  col += vec3(1.0, 0.8, 0.52) * (0.9 * exp(-sd / 0.05) + 0.22 * exp(-sd / 0.3)) * glare * mix(0.45, 1.0, above);
+
+  // Earth's atmosphere: a thin shell, lit from behind; deep gold-orange where the Sun is, blue around the far side
+  float near = exp(-length(uv - sun) / 0.22);
+  vec3 atm = mix(vec3(0.3, 0.5, 1.0), vec3(1.0, 0.62, 0.3), clamp(near * 1.6, 0.0, 1.0));
+  float shell = exp(-abs(h) / max(0.012, 3.0 * px));
+  col += atm * shell * (0.05 + 2.4 * near) * (0.35 + 0.65 * e);
+  col += atm * exp(-max(h, 0.0) / 0.06) * 0.18 * near * (0.3 + 0.7 * e);
+
+  // the planet: the photograph on its night side, a faint lit edge toward the Sun
+  if (h < 0.0) {
+    vec3 tx = texture2D(uEarth, (d / R) * 0.42 + 0.5).rgb;
+    float rim = smoothstep(-0.05, 0.0, h);
+    vec3 surf = tx * (0.018 + rim * rim * near * 0.5) + vec3(0.2, 0.4, 0.9) * 0.05 * rim;
+    col = mix(col, surf + atm * shell * (0.05 + 2.4 * near) * (0.35 + 0.65 * e), 1.0 - above);
   }
   gl_FragColor = finish(col);
 }`;

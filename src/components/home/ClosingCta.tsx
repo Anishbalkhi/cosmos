@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WaitlistForm } from "@/components/layout/WaitlistForm";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
-import { dawnFrag } from "@/components/gl/sectionShaders";
+import { eclipseFrag } from "@/components/gl/sectionShaders";
+import clsx from "clsx";
 
 const POST: PostSettings = { threshold: 0.85, bloom: 0.45, streak: 0.28, aberration: 0, exposure: 1.0, grain: 0.03, vignette: 0.3 };
 
@@ -29,15 +30,43 @@ function useEarthTexture() {
 }
 
 /**
- * "Explore with intention. Find your Cosmos." over a sunrise seen from orbit: Earth's curved
- * horizon low in the frame, its night side dark, the atmosphere glowing along the limb, and the
- * sun climbing over the edge as the section scrolls in. The headline sits in clean dark space.
+ * The launch date over an eclipse seen from space: as the section scrolls in, Earth rises across the
+ * Sun until only the corona and a gold ring of sunlight through its atmosphere are left, the one bright
+ * thing on the screen. The heading sits in the dark above; the form fades in once the eclipse is nearly
+ * total (at once for reduced motion), and stays.
  */
 export function ClosingCta() {
   const section = useRef<HTMLElement>(null);
   const rise = useRef(0);
   const earth = useEarthTexture();
   const textures = useCallback((): Record<string, TexImageSource> => (earth ? { uEarth: earth } : {}), [earth]);
+  const [shown, setShown] = useState(false);
+
+  // the form arrives with totality: 80% of the way into the section's scroll-in (the eclipse completes at ~86%)
+  useEffect(() => {
+    const el = section.current;
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    const check = () => {
+      const r = el.getBoundingClientRect();
+      const p = (window.innerHeight - r.top) / (window.innerHeight * 0.9);
+      if (reduced || p >= 0.8) {
+        setShown(true);
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(check);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    raf = requestAnimationFrame(check);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   const uniforms = useCallback(() => {
     const el = section.current;
@@ -55,13 +84,15 @@ export function ClosingCta() {
     <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-16 pb-[24vh] sm:pt-20">
       {/* both ends dissolve: into the night of the journal above, and into the footer below (no hard edge) */}
       <div className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)]" aria-hidden>
-        {earth && <ShaderCanvas frag={dawnFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}
+        {earth && <ShaderCanvas frag={eclipseFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}
       </div>
       {/* wide enough for "Find your Cosmos." on one centred line at the largest size (it overflowed a 4xl column) */}
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
         <h2 className="display mx-auto max-w-3xl text-4xl sm:text-5xl lg:text-6xl">The first batch ships the week of 11 December.</h2>
-        <WaitlistForm size="lg" className="mx-auto mt-10 max-w-lg" />
-        <p className="mx-auto mt-4 max-w-md text-sm text-dust">We’ll email you the day it’s ready, with a gift on your first order.</p>
+        <div className={clsx("transition-[opacity,translate] duration-1000 ease-cosmic motion-reduce:transition-none", shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0")}>
+          <WaitlistForm size="lg" className="mx-auto mt-10 max-w-lg" />
+          <p className="mx-auto mt-4 max-w-md text-sm text-dust">We’ll email you the day it’s ready, with a gift on your first order.</p>
+        </div>
       </div>
     </section>
   );
