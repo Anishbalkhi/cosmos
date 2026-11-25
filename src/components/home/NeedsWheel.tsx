@@ -8,8 +8,6 @@ import clsx from "clsx";
 import { comingSoon, getProduct, needs, type NeedId } from "@/lib/data";
 import { scrollToY } from "@/lib/experience";
 import { Planet, type PlanetName } from "@/components/space/Planet";
-import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
-import { milkyWayOverFrag } from "@/components/gl/sectionShaders";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -144,11 +142,7 @@ export function NeedsWheel() {
       className="relative [mask-image:linear-gradient(to_bottom,transparent,#000_22vh,#000_calc(100%-40vh),transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_22vh,#000_calc(100%-40vh),transparent)]"
       style={{ height: `${N * 85 + 15}vh` }} aria-labelledby="orbit-title">
       <div ref={stage} className="sticky top-0 h-dvh overflow-hidden">
-        {/* the Milky Way behind the wheel, plus a glow where the horizon rises */}
-        {/* light only: its dark parts are transparent, so the shared sky (and the orbit of light) shows through */}
-        <div className="absolute inset-0 opacity-80" aria-hidden>
-          <ShaderCanvas frag={milkyWayOverFrag} scale={0.5} />
-        </div>
+        {/* the shared sky (UniverseStage) is the backdrop; a glow where the horizon rises */}
         <div
           className="absolute inset-x-0 bottom-0 h-1/2 transition-[background] duration-700"
           style={{ background: `radial-gradient(ellipse 60% 70% at 50% 100%, rgba(${WORLD[needs[active].id].atmo},0.22), transparent 70%)` }}
@@ -171,7 +165,8 @@ export function NeedsWheel() {
               </div>
               {/* lit from above, atmosphere at the limb */}
               <div
-                className="absolute inset-0 rounded-full"
+                // inset to the photo's disc (it fills ~97% of the image): a full-size overlay put a dark ring outside the planet
+                className="absolute inset-[1.6%] rounded-full"
                 style={{
                   background: "radial-gradient(circle at 50% 18%, transparent 45%, rgba(0,0,0,0.55) 80%)",
                   boxShadow: `inset 0 0 50px rgba(${WORLD[n.id].atmo},0.45), 0 0 90px 10px rgba(${WORLD[n.id].atmo},0.28)`,

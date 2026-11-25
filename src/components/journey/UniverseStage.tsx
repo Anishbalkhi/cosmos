@@ -43,6 +43,10 @@ export function UniverseStage() {
       uCamZ: journey.y * 0.55,
       uScroll: journey.y,
       uStars: s.stars ?? 1,
+      uMW: s.mw ?? 0.35,
+      uVeilA: s.veil![0],
+      uVeilB: s.veil![1],
+      uVeil: s.veilAmt,
       // fewer stars per screen on small screens (the same density per pixel as on a laptop)
       uDensity: Math.min(1, Math.sqrt((window.innerWidth * window.innerHeight) / (1280 * 720))),
     };

@@ -44,6 +44,10 @@ export type Stop = {
   dustSpeed: number;
   /** star field brightness (1 = full) */
   stars?: number;
+  /** Milky Way strength (0 = none) */
+  mw?: number;
+  /** nebula veils' two tints (none before the Needs section) */
+  veil?: [Rgb, Rgb];
 };
 
 // the colour script: night, ice, deep blue, warm halos, the Sun, a horizon at golden hour, a green
@@ -54,34 +58,35 @@ export const STOPS: Stop[] = [
     skyTop: [0.004, 0.004, 0.01], skyLow: [0.02, 0.012, 0.01], neb: [0.05, 0.03, 0.02], dust: [1, 0.85, 0.62], dustDensity: 0.6, dustSpeed: 1 },
   // 1 manifesto: a great ice-blue arc, lit on one side
   { pos: [-0.72, 0.42], r: 0.55, squash: 0.5, fill: 0, w: 0.006, split: 0, arc: 0.85, arcAng: -0.6, color: [0.55, 0.75, 1], intensity: 0.8,
-    skyTop: [0.004, 0.008, 0.02], skyLow: [0.01, 0.02, 0.042], neb: [0.02, 0.04, 0.08], dust: [0.75, 0.86, 1], dustDensity: 0.7, dustSpeed: 0.8 },
+    skyTop: [0.004, 0.008, 0.02], skyLow: [0.01, 0.02, 0.042], neb: [0.02, 0.04, 0.08], dust: [0.75, 0.86, 1], dustDensity: 0.7, dustSpeed: 0.8, mw: 0.8 },
   // 2 needs: a low blue glow on the horizon, under the rising world (no ring: it crossed the text and never went in front of a planet)
   { pos: [0, -0.62], r: 0.75, squash: 0.18, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [0.55, 0.7, 1], intensity: 0.12,
-    skyTop: [0.006, 0.006, 0.018], skyLow: [0.028, 0.028, 0.05], neb: [0.03, 0.03, 0.06], dust: [0.92, 0.94, 1], dustDensity: 0.8, dustSpeed: 0.9 },
+    skyTop: [0.006, 0.006, 0.018], skyLow: [0.028, 0.028, 0.05], neb: [0.03, 0.03, 0.06], dust: [0.92, 0.94, 1], dustDensity: 0.8, dustSpeed: 0.9, mw: 1, veil: [[0.32, 0.42, 1.0], [0.62, 0.36, 0.95]] },
   // 3 range: a soft warm bloom behind the cards (halos fixed to the screen drifted off the cards as they scrolled)
   { pos: [0, -0.2], r: 0.55, squash: 0.5, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [1, 0.78, 0.5], intensity: 0.1,
-    skyTop: [0.008, 0.006, 0.012], skyLow: [0.03, 0.02, 0.02], neb: [0.05, 0.03, 0.025], dust: [1, 0.88, 0.7], dustDensity: 0.5, dustSpeed: 0.8 },
+    skyTop: [0.008, 0.006, 0.012], skyLow: [0.03, 0.02, 0.02], neb: [0.05, 0.03, 0.025], dust: [1, 0.88, 0.7], dustDensity: 0.5, dustSpeed: 0.8, veil: [[0.95, 0.52, 0.62], [0.52, 0.38, 0.95]] },
   // 4 how it works: a wide warm haze on the side of the section's own Sun photograph (never a second sun)
   { pos: [0.34, 0.02], r: 0.45, squash: 1, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [1, 0.55, 0.22], intensity: 0.13,
-    skyTop: [0.02, 0.008, 0.004], skyLow: [0.08, 0.035, 0.012], neb: [0.08, 0.035, 0.01], dust: [1, 0.75, 0.45], dustDensity: 0.7, dustSpeed: 1.6 },
+    skyTop: [0.02, 0.008, 0.004], skyLow: [0.08, 0.035, 0.012], neb: [0.08, 0.035, 0.01], dust: [1, 0.75, 0.45], dustDensity: 0.7, dustSpeed: 1.6, veil: [[1.0, 0.5, 0.18], [0.9, 0.28, 0.12]] },
   // 5 proof: the Sun gone down to a line of glare on the horizon
   { pos: [0, -0.34], r: 0.8, squash: 0.015, fill: 0, w: 0.003, split: 0, arc: 0, arcAng: 0, color: [1, 0.7, 0.4], intensity: 0.5,
-    skyTop: [0.012, 0.006, 0.006], skyLow: [0.06, 0.03, 0.015], neb: [0.05, 0.025, 0.012], dust: [1, 0.8, 0.55], dustDensity: 0.5, dustSpeed: 1 },
+    skyTop: [0.012, 0.006, 0.006], skyLow: [0.06, 0.03, 0.015], neb: [0.05, 0.025, 0.012], dust: [1, 0.8, 0.55], dustDensity: 0.5, dustSpeed: 1, veil: [[1.0, 0.58, 0.3], [0.55, 0.38, 0.85]] },
   // 6 plant: a single sharp green-white star, up and to the right of the leaf (clear of its labels)
   { pos: [0.72, 0.28], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [0.75, 1, 0.55], intensity: 2.2,
-    skyTop: [0.004, 0.008, 0.006], skyLow: [0.012, 0.025, 0.015], neb: [0.02, 0.045, 0.025], dust: [0.78, 0.92, 0.62], dustDensity: 0.55, dustSpeed: 0.8 },
+    skyTop: [0.004, 0.008, 0.006], skyLow: [0.012, 0.025, 0.015], neb: [0.02, 0.045, 0.025], dust: [0.78, 0.92, 0.62], dustDensity: 0.55, dustSpeed: 0.8, veil: [[0.4, 0.85, 0.5], [0.3, 0.62, 0.9]] },
   // 7 journal: the pole star, the deepest night, in the empty left margin (clear of the header and the cover)
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.008, split: 0, arc: 0, arcAng: 0, color: [0.85, 0.9, 1], intensity: 2.2,
-    skyTop: [0.002, 0.003, 0.01], skyLow: [0.008, 0.012, 0.03], neb: [0.015, 0.02, 0.05], dust: [0.82, 0.88, 1], dustDensity: 0.6, dustSpeed: 0.6 },
+    skyTop: [0.002, 0.003, 0.01], skyLow: [0.008, 0.012, 0.03], neb: [0.015, 0.02, 0.05], dust: [0.82, 0.88, 1], dustDensity: 0.6, dustSpeed: 0.6, mw: 0.7, veil: [[0.34, 0.44, 1.0], [0.55, 0.34, 0.9]] },
   // 8 closing: the section paints its own sunrise over Earth; the shared light simply goes out
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [1, 0.75, 0.45], intensity: 0,
-    skyTop: [0.01, 0.01, 0.03], skyLow: [0.08, 0.05, 0.05], neb: [0.05, 0.03, 0.04], dust: [1, 0.85, 0.65], dustDensity: 0.4, dustSpeed: 0.6, stars: 0.8 },
+    skyTop: [0.01, 0.01, 0.03], skyLow: [0.08, 0.05, 0.05], neb: [0.05, 0.03, 0.04], dust: [1, 0.85, 0.65], dustDensity: 0.4, dustSpeed: 0.6, stars: 0.8, veil: [[1.0, 0.6, 0.45], [0.5, 0.45, 0.95]] },
   // 9 footer: the light is gone, only dark sky and a little dust
   { pos: [-0.75, 0.3], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [1, 0.75, 0.45], intensity: 0,
-    skyTop: [0.004, 0.004, 0.008], skyLow: [0.006, 0.006, 0.012], neb: [0.01, 0.01, 0.015], dust: [0.9, 0.88, 0.85], dustDensity: 0.25, dustSpeed: 0.4, stars: 0.4 },
+    skyTop: [0.004, 0.004, 0.008], skyLow: [0.006, 0.006, 0.012], neb: [0.01, 0.01, 0.015], dust: [0.9, 0.88, 0.85], dustDensity: 0.25, dustSpeed: 0.4, stars: 0.4, mw: 0.15 },
 ];
 
 export const LAST = STOPS.length - 1;
+const NO_VEIL: [Rgb, Rgb] = [[0.32, 0.42, 1.0], [0.62, 0.36, 0.95]];
 
 const mix = (a: number, b: number, k: number) => a + (b - a) * k;
 const mix3 = (a: Rgb, b: Rgb, k: number): Rgb => [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)];
@@ -91,7 +96,7 @@ const smooth = (lo: number, hi: number, x: number) => {
 };
 
 /** the stop keyframes blended at journey value t (0..9) */
-export function stopAt(t: number): Stop {
+export function stopAt(t: number): Stop & { veilAmt: number } {
   const c = Math.min(LAST, Math.max(0, t));
   const i = Math.min(LAST - 1, Math.floor(c));
   const k = c - i;
@@ -115,6 +120,10 @@ export function stopAt(t: number): Stop {
     dustDensity: mix(a.dustDensity, b.dustDensity, k),
     dustSpeed: mix(a.dustSpeed, b.dustSpeed, k),
     stars: mix(a.stars ?? 1, b.stars ?? 1, k),
+    mw: mix(a.mw ?? 0.35, b.mw ?? 0.35, k),
+    veil: [mix3((a.veil ?? b.veil ?? NO_VEIL)[0], (b.veil ?? a.veil ?? NO_VEIL)[0], k), mix3((a.veil ?? b.veil ?? NO_VEIL)[1], (b.veil ?? a.veil ?? NO_VEIL)[1], k)],
+    /** 0..1: how present the veils are (they fade in across the seam into the Needs section, out at the footer) */
+    veilAmt: mix(a.veil ? 1 : 0, b.veil ? 1 : 0, k),
   };
 }
 
