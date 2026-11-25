@@ -11,26 +11,36 @@ gsap.registerPlugin(ScrollTrigger);
 
 // ordered by shrinking scale, so every transition really is a zoom in
 const STOPS = [
-  { scale: "10²⁴ m", title: "The cosmic web", body: "Galaxies hang on threads of dark matter, like dew on a spider’s web." },
-  { scale: "10²¹ m", title: "A galaxy", body: "A hundred thousand light years of stars. Every atom in you was forged in one." },
+  { exp: "24", title: "The cosmic web", body: "Galaxies hang on threads of dark matter, like dew on a spider’s web." },
+  { exp: "21", title: "A galaxy", body: "A hundred thousand light years of stars. Every atom in you was forged in one." },
   {
-    scale: "10¹⁷ m",
+    exp: "17",
     title: "Where stars are born",
     body: "The Orion Nebula, 1,344 light years away, photographed by Hubble: a cloud of gas where new stars are still forming.",
   },
   {
-    scale: "10⁻⁷ m",
+    exp: "−7",
     title: "The surface of a cell",
     body: "Inside you, a cosmos of its own. Every cell is studded with receptors, and the endocannabinoid system is a network of them: part of how the body regulates sleep, mood and focus.",
   },
-  { scale: "10⁻¹⁰ m", title: "An atom", body: "Almost entirely empty space, held together by balance. From the largest scale to the smallest, it’s balance all the way down." },
+  { exp: "−10", title: "An atom", body: "Almost entirely empty space, held together by balance. From the largest scale to the smallest, it’s balance all the way down." },
 ];
 
 const N = STOPS.length;
 // built once, shared by every mount: the 3D noise lookup the cosmic web and atom cloud read
 let noiseTex: HTMLCanvasElement | null = null;
 const textures = () => ({ uNoise: (noiseTex ??= zoomNoiseTexture()) });
-const POST = { threshold: 0.7, bloom: 0.55, streak: 0.12, aberration: 0.015, exposure: 1.1, grain: 0.035, vignette: 0.3 };
+// low aberration and grain: the cosmic web's coloured fringes and speckle were the noisiest image on the site
+const POST = { threshold: 0.7, bloom: 0.55, streak: 0.12, aberration: 0.004, exposure: 1.1, grain: 0.02, vignette: 0.3 };
+
+/** 10 to the power of e, metres, with a real superscript (the Unicode superscript digits sat at different heights) */
+function Scale({ exp }: { exp: string }) {
+  return (
+    <>
+      10<sup className="relative -top-[0.35em] ml-px align-baseline text-[0.8em]">{exp}</sup> m
+    </>
+  );
+}
 
 const ss = (lo: number, hi: number, x: number) => {
   const k = Math.min(1, Math.max(0, (x - lo) / (hi - lo)));
@@ -62,6 +72,7 @@ export function CosmosToCell() {
   const photo = useRef<HTMLDivElement>(null);
   const white = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [pinned, setPinned] = useState(false);
 
   const uniforms = useCallback(() => {
     const s = stage.current;
@@ -97,26 +108,28 @@ export function CosmosToCell() {
         start: "top top",
         end: "bottom bottom",
         onUpdate: (self) => {
-          // hold on each scale, zoom between them
+          // hold on each scale, zoom between them (the change takes 60% of each step, so nothing pops on a quick scroll)
           const x = self.progress * (N - 1);
           const i = Math.min(Math.floor(x), N - 2);
-          const k = Math.min(1, Math.max(0, (x - i - 0.3) / 0.45));
+          const k = Math.min(1, Math.max(0, (x - i - 0.2) / 0.6));
           const v = i + k * k * (3 - 2 * k);
           stage.current.target = v;
           if (reduced) stage.current.current = v;
           setActive(Math.round(v));
         },
+        // the scale ruler only shows while the scene is held on screen, not while it scrolls in or out under the header
+        onToggle: (self) => setPinned(self.isActive),
       });
     }, el);
     return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={section} className="relative bg-black" style={{ height: `${N * 85}vh` }} aria-labelledby="c2c-title">
+    <section ref={section} className="relative" style={{ height: `${N * 85}vh` }} aria-labelledby="c2c-title">
       <div className="sticky top-0 h-dvh overflow-hidden">
-        <div className="absolute inset-0" aria-hidden>
+        {/* the scene's top and bottom fade into the page's night sky, so it enters and leaves without an edge */}
+        <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,#000_16%,#000_84%,transparent)]" aria-hidden>
           <ShaderCanvas frag={zoomFrag} uniforms={uniforms} textures={textures} scale={0.6} post={POST} />
-        </div>
         {/* the Orion Nebula: its core (the Trapezium) sits 44% across and 44% down the photograph */}
         <div
           ref={photo}
@@ -131,8 +144,9 @@ export function CosmosToCell() {
           {/* eslint-disable-next-line @next/next/no-img-element -- scaled every frame by the zoom; a plain image avoids layout work */}
           <img src="/planets/orion.webp" alt="" className="h-full w-full object-cover object-[44%_44%]" decoding="async" />
         </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
+        </div>
         <div ref={white} className="absolute inset-0 bg-[#fbe9e0] opacity-0" aria-hidden />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/50" aria-hidden />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-between px-5 pt-24 pb-14 sm:px-8 sm:pt-28">
           <div>
@@ -153,19 +167,27 @@ export function CosmosToCell() {
                 aria-hidden={i !== active}
               >
                 <p className="font-mono text-xs tracking-[0.18em] text-flare-soft">
-                  {String(i + 1).padStart(2, "0")} / {String(N).padStart(2, "0")} · {s.scale}
+                  {String(i + 1).padStart(2, "0")} / {String(N).padStart(2, "0")} · <Scale exp={s.exp} />
                 </p>
-                <h3 className="display mt-2 text-4xl sm:text-5xl">{s.title}</h3>
-                <p className="mt-3 text-base leading-relaxed text-star/80 [text-shadow:0_2px_16px_rgb(0_0_0/0.9)]">{s.body}</p>
+                <h3 className="display mt-2 text-4xl [text-shadow:0_2px_18px_rgb(0_0_0/0.9)] sm:text-5xl">{s.title}</h3>
+                <p className="mt-3 text-base leading-relaxed text-star/85 [text-shadow:0_2px_16px_rgb(0_0_0/0.9)]">{s.body}</p>
               </div>
             ))}
           </div>
 
           {/* scale ruler */}
-          <div className="absolute top-1/2 right-5 hidden -translate-y-1/2 flex-col gap-3 sm:right-8 sm:flex" aria-hidden>
+          <div
+            className={clsx(
+              "absolute top-1/2 right-5 hidden -translate-y-1/2 flex-col gap-3.5 transition-opacity duration-500 sm:right-8 sm:flex",
+              pinned ? "opacity-100" : "opacity-0",
+            )}
+            aria-hidden
+          >
             {STOPS.map((s, i) => (
-              <span key={s.title} className={clsx("flex items-center justify-end gap-3 font-mono text-[11px] tracking-[0.14em] transition-colors duration-500", i === active ? "text-star" : "text-star/35")}>
-                {s.scale}
+              <span key={s.title} className={clsx("flex items-center justify-end gap-3 font-mono text-xs tracking-[0.12em] transition-colors duration-500", i === active ? "text-star" : "text-star/55")}>
+                <span>
+                  <Scale exp={s.exp} />
+                </span>
                 <span className={clsx("h-px transition-all duration-500", i === active ? "w-10 bg-flare" : "w-4 bg-white/30")} />
               </span>
             ))}

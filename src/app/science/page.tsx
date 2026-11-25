@@ -1,4 +1,3 @@
-import { LabCertificate } from "@/components/product/LabCertificate";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Section";
@@ -6,8 +5,11 @@ import { LeafLegend, LeafScene } from "@/components/science/LeafScene";
 import { LeafToGummy } from "@/components/science/LeafToGummy";
 import { CosmosToCell } from "@/components/science/CosmosToCell";
 import { Reveal } from "@/components/ui/Reveal";
-import { products } from "@/lib/data";
-import { ExplainerVideo } from "@/components/science/ExplainerVideo";
+import { DoseClock } from "@/components/ui/DoseClock";
+import { LabReports } from "@/components/science/LabReports";
+import { Placeholder } from "@/components/ui/Placeholder";
+import { UniverseStage } from "@/components/journey/UniverseStage";
+import { SCIENCE_SKY } from "@/lib/journey";
 
 export const metadata: Metadata = {
   title: "The Science",
@@ -30,21 +32,24 @@ const DOSING = [
 export default function SciencePage() {
   return (
     <>
+      {/* one night sky behind the whole page (as on the home page): every section floats in it, no hard edges */}
+      <UniverseStage sky={SCIENCE_SKY} />
       <PageHeader
+        blend
         visual="moon"
         eyebrow="The Science"
         title={
           <>
             Leaf, not flower.
             <br />
-            <span className="text-leaf">Tested, not trusted.</span>
+            <span className="text-star/55">Tested, not trusted.</span>
           </>
         }
         intro="Everything you should know before you take your first gummy: why it’s legal, how it’s made, how to dose, and the lab report for every batch."
       />
 
       {/* legal */}
-      <section className="py-24 sm:py-32">
+      <section className="pt-20 pb-8 sm:pt-28 sm:pb-10">
         <Container className="grid items-center gap-16 lg:grid-cols-2">
           <Reveal>
             <p className="eyebrow mb-5">Why it&rsquo;s legal</p>
@@ -55,8 +60,12 @@ export default function SciencePage() {
                 tops, fall outside that definition.
               </p>
               <p>
-                Ayurveda has used the leaf, <em>vijaya</em>, for centuries. Cosmos is made from leaf extract only, under licence no.{" "}
-                <span className="text-flare-soft">[to be added]</span>.
+                Ayurveda has used the leaf, <em>vijaya</em>, for centuries. Cosmos is made from leaf extract only, under licence
+                <Placeholder note="licence number">
+                  {" "}
+                  no. [to be added]
+                </Placeholder>
+                .
               </p>
             </div>
             <LeafLegend className="mt-8" />
@@ -77,16 +86,31 @@ export default function SciencePage() {
           <p className="eyebrow mb-5">Dosing guide</p>
           <h2 className="display max-w-3xl text-4xl sm:text-5xl">Start low. Go slow.</h2>
           <p className="mt-6 max-w-2xl text-dust">Effects build over 45 to 90 minutes. Wait at least two hours before taking more. Never drive after use.</p>
-          <figure className="mt-12 overflow-hidden rounded-[24px] border border-line">
-            <ExplainerVideo
-              src="/video/start-low-go-slow.mp4"
-              poster="/video/start-low-go-slow.jpg"
-              label="Start low, go slow: take one gummy, your body digests it, it is felt in 45 to 90 minutes, wait two hours before more."
-            />
-          </figure>
-          <div className="mt-8 overflow-x-auto rounded-[24px] border border-line">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="bg-space-2 font-mono text-[11px] tracking-[0.14em] text-dust uppercase">
+          {/* the same two-hour clock as the home page (it was a video that repeated the heading twice) */}
+          <DoseClock className="mt-14 sm:mt-16" />
+
+          {/* phones: one block per need, so nothing is cut off at the right */}
+          <dl className="mt-14 grid gap-4 md:hidden">
+            {DOSING.map((d) => (
+              <div key={d.need} className="rounded-2xl border border-line bg-space/40 p-5 backdrop-blur-sm">
+                <dt className="text-lg font-semibold">{d.need}</dt>
+                <dd className="mt-3 grid gap-2 text-sm">
+                  <p>
+                    <span className="text-dust">First time: </span>
+                    {d.first}
+                  </p>
+                  <p>
+                    <span className="text-dust">Regular use: </span>
+                    {d.regular}
+                  </p>
+                  <p className="text-dust">{d.note}</p>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-14 hidden overflow-hidden rounded-[24px] border border-line bg-space/40 backdrop-blur-sm md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-line font-mono text-xs tracking-[0.12em] text-star/70 uppercase">
                 <tr>
                   <th className="px-6 py-4 font-normal">Need</th>
                   <th className="px-6 py-4 font-normal">First time</th>
@@ -112,21 +136,11 @@ export default function SciencePage() {
       </section>
 
       {/* lab reports */}
-      <section id="lab-reports" className="scroll-mt-24 border-t border-line py-24 sm:py-32">
+      <section id="lab-reports" className="scroll-mt-24 pt-8 pb-24 sm:pt-12 sm:pb-32">
         <Container>
           <p className="eyebrow mb-5">Lab reports</p>
           <h2 className="display max-w-3xl text-4xl sm:text-5xl">Every batch, published.</h2>
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {products.map((p) => (
-              <div key={p.batch}>
-                <p className="mb-3 flex items-center gap-3 font-semibold">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.color, boxShadow: `0 0 10px ${p.color}` }} />
-                  {p.name}
-                </p>
-                <LabCertificate batch={p.batch} coaUrl={p.coaUrl} color={p.color} compact />
-              </div>
-            ))}
-          </div>
+          <LabReports />
         </Container>
       </section>
     </>

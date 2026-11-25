@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
 import { universeFrag } from "@/components/gl/journeyShaders";
-import { driveJourney, journey, lightsAt, stopAt } from "@/lib/journey";
+import { driveJourney, journey, lightsAt, stopAt, type Stop } from "@/lib/journey";
 
 const POST: PostSettings = { threshold: 0.75, bloom: 0.55, streak: 0.16, aberration: 0, exposure: 1.0, grain: 0.03, vignette: 0.35 };
 
@@ -13,7 +13,7 @@ const POST: PostSettings = { threshold: 0.75, bloom: 0.55, streak: 0.16, aberrat
  * stop by stop with the journey (colour script, the light object, stars streaming past).
  * It sleeps until the hero has scrolled away (the hero paints the whole screen until then).
  */
-export function UniverseStage() {
+export function UniverseStage({ sky }: { sky?: Stop } = {}) {
   const [reduced] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(() => driveJourney(), []);
 
@@ -31,10 +31,13 @@ export function UniverseStage() {
   }, []);
 
   const uniforms = useCallback(() => {
-    const s = stopAt(journey.t);
+    // a page with its own fixed sky (Science) holds that one look; the sky still rolls a little as it scrolls
+    const s = sky
+      ? { ...sky, veilAmt: sky.veil ? 0.7 : 0, accentAmt: 0, roll: 0.12 + journey.y * 0.012, grade: 0.7 }
+      : stopAt(journey.t);
     const tint = (c: [number, number, number], on: boolean): [number, number, number] =>
       on ? [accent.current[0], accent.current[1], accent.current[2]] : c;
-    const { a, b, k } = lightsAt(journey.t);
+    const { a, b, k } = sky ? { a: sky, b: sky, k: 0 } : lightsAt(journey.t);
     // reduced motion draws one still frame: sky and stars only, no light that would sit in the wrong place
     const on = reduced ? 0 : 1;
     return {
@@ -67,9 +70,9 @@ export function UniverseStage() {
       // fewer stars per screen on small screens (the same density per pixel as on a laptop)
       uDensity: Math.min(1, Math.sqrt((window.innerWidth * window.innerHeight) / (1280 * 720))),
     };
-  }, [reduced]);
+  }, [reduced, sky]);
 
-  const active = useCallback(() => window.scrollY >= journey.start - 2, []);
+  const active = useCallback(() => !!sky || window.scrollY >= journey.start - 2, [sky]);
 
   return (
     <div className="pointer-events-none fixed inset-0 -z-50" aria-hidden data-universe>

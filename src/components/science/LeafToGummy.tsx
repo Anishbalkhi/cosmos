@@ -30,7 +30,7 @@ export function LeafToGummy({ steps }: { steps: ProcessStep[] }) {
     s.current += (s.target - s.current) * 0.08;
     // dev-only: window.__process = 0..3 freezes the sequence on one step for inspection
     const dbg = process.env.NODE_ENV !== "production" ? (window as Window & { __process?: number }).__process : undefined;
-    return { uStage: dbg ?? s.current, uGum: [1.0, 0.6, 0.1] as [number, number, number] };
+    return { uStage: dbg ?? s.current, uGum: [1.0, 0.6, 0.1] as [number, number, number], uZoom: window.innerWidth < 640 ? 1.25 : 1 };
   }, []);
 
   useEffect(() => {
@@ -45,7 +45,8 @@ export function LeafToGummy({ steps }: { steps: ProcessStep[] }) {
         onUpdate: (self) => {
           const x = self.progress * (N - 1);
           const i = Math.min(Math.floor(x), N - 2);
-          const k = Math.min(1, Math.max(0, (x - i - 0.3) / 0.45));
+          // each change takes 60% of its step: the leaf no longer snaps into the drop on a quick scroll
+          const k = Math.min(1, Math.max(0, (x - i - 0.2) / 0.6));
           const v = i + k * k * (3 - 2 * k);
           stage.current.target = v;
           if (reduced) stage.current.current = v;
@@ -57,13 +58,17 @@ export function LeafToGummy({ steps }: { steps: ProcessStep[] }) {
   }, [N]);
 
   return (
-    <section ref={section} className="relative border-y border-line bg-black" style={{ height: `${N * 90}vh` }} aria-labelledby="process-title">
-      <div className="sticky top-0 h-dvh overflow-hidden">
-        {/* phones: the object sits below the step list; wider screens: to the right of it */}
-        <div className="absolute inset-x-0 top-[56%] bottom-0 sm:top-0 sm:left-[38%]" aria-hidden>
+    <section ref={section} className="relative" style={{ height: `${N * 90}vh` }} aria-labelledby="process-title">
+      {/* the whole pinned layer is screened onto the page's night sky (a sticky element is its own stacking context,
+          so the blend has to sit here, not on the canvas): the scene's black drops out, white type stays white */}
+      <div className="sticky top-0 h-dvh overflow-hidden mix-blend-screen">
+        {/* phones: the object sits below the step list; wider screens: to the right of it, edges faded out */}
+        <div
+          className="absolute inset-x-0 top-[50%] bottom-0 [mask-image:linear-gradient(to_bottom,transparent,#000_18%,#000_88%,transparent)] sm:top-0 sm:left-[34%] sm:[mask-image:radial-gradient(closest-side,#000_70%,transparent)]"
+          aria-hidden
+        >
           <ShaderCanvas frag={processFrag} uniforms={uniforms} post={POST} scale={0.85} maxDpr={1.75} />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/60 to-transparent sm:bg-gradient-to-r sm:from-black sm:via-black/70 sm:to-transparent sm:[background-size:62%_100%] sm:bg-no-repeat" aria-hidden />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-start px-5 pt-24 sm:justify-center sm:px-8 sm:pt-0">
           <p className="eyebrow mb-5">How we make it</p>
@@ -76,11 +81,11 @@ export function LeafToGummy({ steps }: { steps: ProcessStep[] }) {
                 key={s.n}
                 className={clsx(
                   "border-l pl-5 transition-[opacity,border-color] duration-700",
-                  active === i ? "border-leaf opacity-100" : "border-white/15 opacity-70",
+                  active === i ? "border-leaf opacity-100" : "border-white/10 opacity-45",
                 )}
               >
                 <p className="font-mono text-xs tracking-[0.18em] text-leaf">{s.n}</p>
-                <h3 className="mt-1 text-xl font-bold">{s.title}</h3>
+                <h3 className={clsx("mt-1 text-xl", active === i ? "font-semibold" : "font-normal")}>{s.title}</h3>
                 {/* only the step on screen opens up, so four steps fit any laptop height */}
                 <p className={clsx("mt-2 text-sm leading-relaxed text-star/75", active === i ? "block" : "hidden")}>{s.body}</p>
               </li>

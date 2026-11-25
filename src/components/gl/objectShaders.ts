@@ -41,8 +41,8 @@ vec3 shadeGummy(vec3 q, vec3 n, vec3 rd, vec3 Lk){
   c += uGum * 0.16 * ndv;                          // translucent body, deeper toward the middle
   vec3 h = normalize(Lk + v);
   float nh = max(dot(n, h), 0.0);
-  float sugar = step(0.972, hash3(floor(q * 420.0)));
-  c += vec3(1.0, 0.95, 0.9) * (sugar * pow(nh, 8.0) * 1.8 + 0.75 * pow(nh, 48.0));
+  float sugar = step(0.988, hash3(floor(q * 420.0)));   // fewer, fainter sugar glints: at 2.8% they read as noise
+  c += vec3(1.0, 0.95, 0.9) * (sugar * pow(nh, 8.0) * 0.9 + 0.75 * pow(nh, 48.0));
   return c;
 }
 `;
@@ -453,6 +453,7 @@ export const processFrag =
   leafSpace +
   /* glsl */ `
 uniform float uStage;
+uniform float uZoom;     // > 1 draws the object larger (phones, where it sits in a short band under the steps)
 mat3 gR;
 
 float sdDrop(vec3 p){
@@ -473,13 +474,15 @@ vec3 objNormal(vec3 p, float morph){
 }
 
 void main(){
-  vec2 uv = screenUv();
-  float pixA = 2.0 * TANH / min(uRes.x, uRes.y);
+  vec2 uv = screenUv() / uZoom;
+  float pixA = 2.0 * TANH / min(uRes.x, uRes.y) / uZoom;
   vec3 ro = vec3(0.0, 0.0, 3.0);
   vec3 rd = camRay(uv);
   float st = uStage;
 
-  vec3 S = vec3(0.05, 0.3, -1.4);
+  // the star that backlights the leaf moves up and away once the drop forms (sitting right behind the
+  // drop and the gummy it bloomed into a white blotch on their top edge)
+  vec3 S = mix(vec3(0.05, 0.3, -1.4), vec3(0.75, 1.05, -2.6), smoothstep(0.55, 1.2, st));
   vec3 Sv = S - ro;
   vec2 sUv = Sv.xy / (-Sv.z) / (2.0 * TANH);
   float warm = mix(1.0, 0.35, smoothstep(0.6, 1.4, st));
@@ -532,7 +535,7 @@ void main(){
         // extract: clear golden oil, glowing from inside
         vec3 gold = vec3(1.0, 0.68, 0.22);
         vec3 drop = gold * (0.35 + 1.6 * pow(1.0 - ndv, 1.6)) + gold * 0.6 * max(dot(n, K), 0.0);
-        drop += vec3(1.0, 0.95, 0.85) * 4.0 * pow(max(dot(n, normalize(K + v)), 0.0), 120.0);
+        drop += vec3(1.0, 0.95, 0.85) * 1.4 * pow(max(dot(n, normalize(K + v)), 0.0), 90.0);
         drop += vec3(0.55, 0.72, 1.0) * 1.6 * F;
         vec3 gum = shadeGummy((p / sc) * gR / 3.4, n, rd, K);
         vec3 c = mix(drop, gum, morph);
@@ -546,8 +549,7 @@ void main(){
       float ang = atan(uv.y, uv.x);
       float ring1 = exp(-sq((r - 0.33) / 0.0025)) * (0.5 + 0.5 * step(0.0, sin(ang * 36.0 + uTime * 2.0)));
       float ring2 = exp(-sq((r - 0.38) / 0.0018)) * smoothstep(0.2, 1.0, sin(ang * 3.0 - uTime * 1.3));
-      float sweep = exp(-sq((uv.y - (0.3 - 0.6 * fract(uTime * 0.35))) / 0.004)) * (1.0 - smoothstep(0.28, 0.33, abs(uv.x)));
-      col += vec3(0.6, 1.0, 0.45) * test * (1.4 * ring1 + 1.6 * ring2 + 1.2 * sweep);
+      col += vec3(0.6, 1.0, 0.45) * test * (1.4 * ring1 + 1.6 * ring2);
       col += vec3(1.0, 0.85, 0.55) * test * 0.06 * exp(-abs(r - 0.36) * 30.0);
     }
   }

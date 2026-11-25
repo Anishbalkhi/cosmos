@@ -14,7 +14,8 @@ export const PREVIEW = process.env.NODE_ENV !== "production" || process.env.NEXT
 export function Placeholder({ children, fallback = null, note }: { children: ReactNode; fallback?: ReactNode; note?: string }) {
   if (!PREVIEW) return <>{fallback}</>;
   return (
-    <span className="underline decoration-dashed decoration-[rgb(var(--accent-rgb)/0.7)] underline-offset-4" title={`Placeholder: ${note ?? "to confirm with the client"}`}>
+    // a faint dotted underline and a help cursor: marked as unconfirmed without looking like a link
+    <span className="cursor-help underline decoration-dotted decoration-[rgb(var(--accent-rgb)/0.45)] decoration-1 underline-offset-[5px]" title={`Placeholder: ${note ?? "to confirm with the client"}`}>
       {children}
     </span>
   );

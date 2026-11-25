@@ -9,12 +9,13 @@ const POST: PostSettings = { threshold: 0.95, bloom: 0.5, streak: 0.22, aberrati
 /**
  * "We only use the leaf": one Cannabis sativa fan leaf in 3D, the same seven leaflets as the
  * Cosmos mark, held up against a star so light comes through the blade. A lab scan line
- * sweeps down it every few seconds. Feathered edges so it sits in the page, not in a box.
+ * sweeps down it every few seconds. Screened and feathered, so it sits in the sky, not in a box.
  */
 export function LeafScene({ className, labels = true }: { className?: string; labels?: boolean }) {
   return (
     <div className={clsx("relative", className)}>
-      <div className="absolute inset-0 [mask-image:radial-gradient(closest-side,#000_72%,transparent)]">
+      {/* screened onto the night sky (its black background drops out) and feathered, so no square shows round the glow */}
+      <div className="absolute inset-0 mix-blend-screen [mask-image:radial-gradient(closest-side,#000_60%,transparent)]">
         <ShaderCanvas frag={leafFrag} post={POST} scale={0.9} maxDpr={1.75} />
       </div>
       {labels && (
@@ -27,7 +28,7 @@ export function LeafScene({ className, labels = true }: { className?: string; la
           <p className="absolute bottom-[24%] left-[16%] text-dust">
             Every batch
             <br />
-            <span className="text-leaf">Lab scanned</span>
+            <span className="text-leaf">Lab tested</span>
           </p>
         </div>
       )}
@@ -40,14 +41,15 @@ export function LeafLegend({ className }: { className?: string }) {
   return (
     <ul className={clsx("grid gap-3 text-sm", className)}>
       <li className="flex items-start gap-3">
-        <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-leaf shadow-[0_0_12px_var(--color-leaf)]" />
+        {/* the two markers are the same size and weight: a filled circle (used) and a crossed-out one (never used) */}
+        <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-leaf bg-leaf" />
         <span>
           <span className="font-semibold text-star">Leaves</span> <span className="text-dust">— what every Cosmos gummy is made from</span>
         </span>
       </li>
       <li className="flex items-start gap-3">
-        <span className="relative mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-dust/60">
-          <span className="absolute top-1/2 left-1/2 h-px w-3.5 -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-dust" />
+        <span className="relative mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-dust">
+          <span className="absolute top-1/2 left-1/2 h-px w-2.5 -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-dust" />
         </span>
         <span>
           <span className="font-semibold text-star">Flowering tops and resin</span> <span className="text-dust">— never used, and prohibited under the NDPS Act</span>

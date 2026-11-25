@@ -29,6 +29,7 @@ export function PageHeader({
   children,
   visual = "blackhole",
   scene,
+  blend = false,
 }: {
   eyebrow: string;
   title: ReactNode;
@@ -36,12 +37,15 @@ export function PageHeader({
   children?: ReactNode;
   visual?: PlanetName | "blackhole";
   scene?: string;
+  /** on a page with the shared night sky behind it: no grain panel and no bottom rule, it opens straight onto the sky */
+  blend?: boolean;
 }) {
   const wide = visual === "saturn";
   return (
     <section
       className={clsx(
-        "grain relative isolate overflow-hidden border-b border-line pt-16 pb-16 sm:pt-24 sm:pb-20",
+        "relative isolate overflow-hidden pt-16 pb-16 sm:pt-24 sm:pb-20",
+        !blend && "grain border-b border-line",
         scene && "flex min-h-[62vh] flex-col justify-end sm:min-h-[70vh]",
       )}
     >

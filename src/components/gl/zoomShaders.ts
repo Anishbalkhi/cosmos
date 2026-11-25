@@ -74,9 +74,13 @@ vec3 sceneGalaxy(vec2 uv, float zoom){
       vec2 q = (o + d * tp).xz;
       float r = length(q);
       float th = atan(q.y, q.x) + uTime * 0.025;
-      float sp = 2.0 * (th - 2.3 * log(r + 0.02));
-      float arm = pow(0.5 + 0.5 * cos(sp), 2.6);
-      float dust = pow(0.5 + 0.5 * cos(sp + 0.7), 9.0) * smoothstep(0.06, 0.25, r);
+      // arms wander and break up like a real spiral's (a perfect logarithmic swirl read as drawn)
+      float wob = 1.6 * (noise3(vec3(q * 3.0, 1.7)) - 0.5) + 0.6 * (noise3(vec3(q * 7.0, 8.3)) - 0.5);
+      float sp = 2.0 * (th - 2.3 * log(r + 0.02)) + wob;
+      float clump = 0.45 + 1.1 * noise3(vec3(rot(q, 1.3) * 30.0, 2.2));          // star clouds along the arms
+      float arm = pow(0.5 + 0.5 * cos(sp), 2.6) * clump;
+      float dust = pow(0.5 + 0.5 * cos(sp + 0.7), 9.0) * smoothstep(0.06, 0.25, r)
+                 + 0.5 * smoothstep(0.55, 0.8, noise3(vec3(q * 11.0, 5.1))) * smoothstep(0.08, 0.3, r) * (1.0 - smoothstep(0.6, 1.0, r));
       float disk = exp(-r / 0.3) * (1.0 - smoothstep(0.7, 1.25, r));
       float n = noise(q * 13.0 + 3.0);
       float n2 = noise3(vec3(rot(q, 0.6) * 22.0, 4.5));
@@ -183,6 +187,8 @@ vec3 sceneAtom(vec2 uv, float zoom){
       float shimmer = 0.7 + 0.6 * noise3(p * 14.0 + vec3(0.0, 0.0, uTime * 0.8));   // probability, not orbits
       vec3 e = (vec3(0.45, 0.68, 1.0) * p2.x + vec3(0.78, 0.5, 1.0) * p2.y + vec3(1.0, 0.78, 0.5) * p2.z * 0.6) * shimmer
              + vec3(1.0, 0.86, 0.62) * s1 * 0.6;
+      // the 2s shell: a faint, crisp boundary that gives the cloud a shape
+      e += vec3(0.6, 0.72, 1.0) * 0.06 * exp(-sq((r - 0.62) / 0.025));
       col += e * dt * 1.6;
       t += dt;
     }
@@ -190,7 +196,7 @@ vec3 sceneAtom(vec2 uv, float zoom){
   // the nucleus: a tight knot of protons and neutrons, far smaller than its cloud
   float tn = -dot(o, d);
   float dn = length(o + d * tn);
-  col += vec3(1.0, 0.8, 0.5) * (6.0 * exp(-dn * dn / 0.00025) + 0.4 * exp(-dn / 0.03));
+  col += vec3(1.0, 0.8, 0.5) * (2.2 * exp(-dn * dn / 0.00012) + 0.25 * exp(-dn / 0.025));
   return col;
 }
 
@@ -209,10 +215,12 @@ void main(){
   // the current scale rushes past while the next opens out of its centre
   float zA = 1.0 + k * k * 6.0;
   float zB = 0.06 + 0.94 * smoothstep(0.0, 1.0, k);
-  float m = smoothstep(0.3, 0.78, k);
+  // the old scale is gone (rushed past into its own centre) before the new one fills in: no double exposure
+  float wA = 1.0 - smoothstep(0.25, 0.6, k);
+  float wB = smoothstep(0.45, 0.85, k);
   vec3 col = vec3(0.0);
-  if (m < 0.999) col += scene(i, uv, zA) * (1.0 - m);
-  if (m > 0.001) col += scene(i + 1.0, uv, zB) * m;
+  if (wA > 0.001) col += scene(i, uv, zA) * wA;
+  if (wB > 0.001) col += scene(i + 1.0, uv, zB) * wB;
   float rush = k * (1.0 - k) * 4.0;
   col += vec3(0.85, 0.88, 1.0) * rush * 0.25 * exp(-length(uv) * 4.0);
   gl_FragColor = finish(col);

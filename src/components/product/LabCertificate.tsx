@@ -55,15 +55,24 @@ export function LabCertificate({ batch, coaUrl, color, compact = false }: { batc
                 <span className="block text-sm font-semibold whitespace-nowrap">{t.name}</span>
                 {!compact && <span className="mt-1 block text-xs text-dust">{t.note}</span>}
               </span>
-              <span className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] whitespace-nowrap uppercase" style={{ borderColor: `${tone(color)}66`, color: tone(color) }}>
-                {published ? "Passed" : "At launch"}
-              </span>
+              {/* a status per test only once there are results; before that one line says so (no row of "at launch" chips) */}
+              {published && (
+                <span className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] whitespace-nowrap uppercase" style={{ borderColor: `${tone(color)}66`, color: tone(color) }}>
+                  Passed
+                </span>
+              )}
             </li>
           ))}
         </ul>
         <div className="mt-6 flex flex-wrap items-center gap-4">
-          <CoaLink url={coaUrl} label="Download certificate (PDF)" className="h-11 px-5" />
-          {!published && <p className="text-xs text-dust">Results are published here with the first batch.</p>}
+          {published ? (
+            <CoaLink url={coaUrl} label="Download certificate (PDF)" className="h-11 px-5" />
+          ) : (
+            <p className="flex items-center gap-2.5 text-sm text-star/80">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: tone(color) }} aria-hidden />
+              Results and the PDF are published here with the first batch.
+            </p>
+          )}
         </div>
       </div>
     </div>
