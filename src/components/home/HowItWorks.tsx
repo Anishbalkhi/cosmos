@@ -15,77 +15,140 @@ const STEPS = [
   { n: "03", title: "Notice the shift", body: "Calm, not a high. Keep a note of how you feel: it becomes your personal dosing guide." },
 ];
 
+// marks on the orbit, one per step (degrees clockwise from the top), with the time each stands for
+const MARKS = [
+  { at: 0, label: "Take one" },
+  { at: 120, label: "45–90 min" },
+  { at: 240, label: "2 hours" },
+];
+
 /**
- * "Start low. Go slow." as a slow flight toward the Sun (reference pin 880313058437041334):
- * scrolling flies the camera past Neptune (step 01) and Saturn (step 02) until the Sun
- * fills the frame (step 03). Real NASA photographs throughout.
+ * The shadow over the Moon for an illuminated fraction p (0 new, 1 full), lit from the right as it waxes.
+ * In a unit circle (y down): the dark limb on the left, closed by the terminator, an ellipse whose
+ * half-width is |cos(πp)| and bulges right while it is a crescent, left once it is gibbous.
+ */
+function shadowPath(p: number) {
+  const k = Math.cos(Math.PI * Math.min(1, Math.max(0, p)));
+  const rx = Math.max(0.0001, Math.abs(k));
+  const sweep = k > 0 ? 0 : 1;
+  return `M0,-1 A1,1 0 0 0 0,1 A${rx.toFixed(4)},1 0 0 ${sweep} 0,-1 Z`;
+}
+
+/**
+ * "Start low. Go slow." as the Moon waxing (a real NASA photograph): a thin crescent when you start,
+ * filling as you scroll through the steps, full by the last, the way the effect builds over two
+ * hours. A thin orbit round it fills in with the steps, marked with the times they stand for.
  */
 export function HowItWorks() {
   const section = useRef<HTMLElement>(null);
+  const shadow = useRef<SVGPathElement>(null);
+  const arc = useRef<SVGCircleElement>(null);
+  const halo = useRef<HTMLDivElement>(null);
+  const moon = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     const el = section.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: el,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.8,
-          onUpdate: (st) => setStep(Math.min(2, Math.floor(st.progress * 3))),
-        },
-      });
-      // Neptune grows out of the haze and slides past up and to the right, away from the steps
-      // (each planet is gone before the next stage, so the Sun alone fills the last frame; it fades out
-      // before it gets big, so no huge see-through disc crosses the screen)
-      tl.fromTo(".fly-neptune", { scale: 0.12, xPercent: 0, yPercent: 0, opacity: 0 }, { scale: 0.55, opacity: 1, duration: 0.55 }, 0)
-        .to(".fly-neptune", { scale: 2.4, xPercent: 130, yPercent: -70, duration: 0.85, ease: "power2.in" }, 0.55)
-        .to(".fly-neptune", { opacity: 0, duration: 0.18, ease: "power1.in" }, 0.95)
-        // Saturn follows on the right
-        .fromTo(".fly-saturn", { scale: 0.1, opacity: 0 }, { scale: 0.5, opacity: 1, duration: 0.6 }, 1.0)
-        .to(".fly-saturn", { scale: 3.0, xPercent: 140, yPercent: 55, duration: 0.8, ease: "power2.in" }, 1.6)
-        .to(".fly-saturn", { opacity: 0, duration: 0.2 }, 2.0)
-        // the Sun, small and far all along, grows until it fills the frame
-        .fromTo(".fly-sun", { scale: 0.08 }, { scale: 0.35, duration: 2.0 }, 0)
-        .to(".fly-sun", { scale: 1.12, duration: 1.0, ease: "power2.inOut" }, 2.0)
-        .fromTo(".fly-haze", { opacity: 0.35 }, { opacity: 1, duration: 3.0 }, 0)
-        .fromTo(".fly-stars", { scale: 1 }, { scale: 1.8, duration: 3.0 }, 0);
-    }, el);
-    return () => ctx.revert();
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const state = { p: 0 };
+    const render = () => {
+      const p = state.p;
+      // a clear crescent at the start, full at the end
+      shadow.current?.setAttribute("d", shadowPath(0.18 + 0.82 * p));
+      arc.current?.setAttribute("stroke-dashoffset", String(1 - p));
+      if (halo.current) halo.current.style.opacity = String(0.25 + 0.75 * p);
+      if (moon.current) moon.current.style.transform = `rotate(${(-12 + 12 * p).toFixed(2)}deg) scale(${(0.94 + 0.06 * p).toFixed(3)})`;
+    };
+    render();
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        setStep(Math.min(2, Math.floor(self.progress * 3)));
+        if (reduced) {
+          state.p = self.progress;
+          render();
+        } else gsap.to(state, { p: self.progress, duration: 0.7, ease: "power2.out", overwrite: true, onUpdate: render });
+      },
+    });
+    return () => st.kill();
   }, []);
 
   return (
     <section ref={section} className="relative h-[300vh]" aria-labelledby="how-title">
       <div className="sticky top-0 h-dvh overflow-hidden">
-        {/* the flight: warm haze, stars rushing outward, planets passing, the Sun ahead */}
-        <div className="fly-haze absolute inset-0 bg-[radial-gradient(circle_at_70%_48%,rgb(232_150_70/0.28),rgb(120_70_30/0.12)_35%,transparent_70%)]" aria-hidden />
+        {/* the Moon and its orbit */}
         <div
-          className="fly-stars absolute inset-0 opacity-60"
+          className="absolute top-[76%] left-1/2 w-[min(58vw,280px)] -translate-x-1/2 -translate-y-1/2 sm:top-1/2 sm:left-[68%] sm:w-[min(48vmin,460px)]"
           aria-hidden
-          style={{
-            backgroundImage:
-              "radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 78% 14%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 64% 72%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 30% 82%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 90% 56%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 44% 40%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 20% 60%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 85% 85%, #fff 50%, transparent 51%)",
-          }}
-        />
-        <div className="absolute top-[74%] left-[58%] w-[min(66vmin,580px)] sm:top-[48%] sm:left-[70%] -translate-x-1/2 -translate-y-1/2" aria-hidden>
-          <div className="fly-sun origin-center">
-            <Planet name="sun" glow="rgba(255,170,80,0.6)" className="w-full" sizes="620px" />
+        >
+          <div className="relative aspect-square">
+            {/* cool moonlight round it, growing as it fills */}
+            <div
+              ref={halo}
+              className="absolute -inset-[30%] rounded-full bg-[radial-gradient(closest-side,rgb(170_190_255/0.16),rgb(120_140_220/0.06)_45%,transparent_70%)]"
+            />
+            {/* the orbit: a faint ring, the part travelled so far lit, and a mark per step */}
+            <svg viewBox="-60 -60 120 120" className="absolute -inset-[14%] overflow-visible">
+              <circle r="56" fill="none" stroke="rgb(243 238 230 / 0.12)" strokeWidth="0.35" strokeDasharray="0.8 1.6" />
+              <circle
+                ref={arc}
+                r="56"
+                fill="none"
+                stroke="var(--color-flare)"
+                strokeWidth="0.6"
+                strokeLinecap="round"
+                pathLength={1}
+                strokeDasharray="1"
+                strokeDashoffset="1"
+                transform="rotate(-90)"
+                style={{ filter: "drop-shadow(0 0 1.5px var(--color-flare))" }}
+              />
+              {MARKS.map((m, i) => {
+                const a = ((m.at - 90) * Math.PI) / 180;
+                const x = Math.cos(a) * 56;
+                const y = Math.sin(a) * 56;
+                const lx = Math.cos(a) * 64;
+                const ly = Math.sin(a) * 64;
+                const on = step >= i;
+                return (
+                  <g key={m.label}>
+                    <circle cx={x} cy={y} r={on ? 1.6 : 1.1} fill={on ? "var(--color-flare)" : "#07080f"} stroke={on ? "none" : "rgb(243 238 230 / 0.4)"} strokeWidth="0.35" style={{ transition: "r 0.5s, fill 0.5s" }} />
+                    <text
+                      // phones: the steps say the same, and the labels would run off the screen
+                      className="hidden sm:inline"
+                      x={lx}
+                      y={ly + 1.4}
+                      textAnchor={Math.abs(lx) < 4 ? "middle" : lx > 0 ? "start" : "end"}
+                      fontSize="3.6"
+                      letterSpacing="0.6"
+                      fill={on ? "#f3eee6" : "#9d99a8"}
+                      fontFamily="var(--font-geist-mono)"
+                      style={{ transition: "fill 0.5s" }}
+                    >
+                      {m.label.toUpperCase()}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+            <div ref={moon} className="absolute inset-0 will-change-transform">
+              <Planet name="moon" className="h-full w-full" sizes="(max-width: 640px) 72vw, 460px" />
+              {/* the night side: earthshine keeps it faintly visible, the terminator soft as on the real Moon */}
+              <svg viewBox="-1 -1 2 2" className="absolute inset-[1.6%] h-[96.8%] w-[96.8%]">
+                <defs>
+                  <filter id="how-terminator" x="-10%" y="-10%" width="120%" height="120%">
+                    <feGaussianBlur stdDeviation="0.025" />
+                  </filter>
+                </defs>
+                <path ref={shadow} d={shadowPath(0.18)} fill="#03040a" fillOpacity="0.93" filter="url(#how-terminator)" />
+              </svg>
+            </div>
           </div>
         </div>
-        <div className="absolute top-[72%] left-[52%] w-[min(40vmin,360px)] sm:top-[44%] sm:left-[66%] -translate-x-1/2 -translate-y-1/2" aria-hidden>
-          <div className="fly-saturn origin-center opacity-0">
-            <Planet name="saturn" className="w-full" sizes="360px" />
-          </div>
-        </div>
-        <div className="absolute top-[76%] left-[56%] w-[min(34vmin,300px)] sm:top-[52%] sm:left-[68%] -translate-x-1/2 -translate-y-1/2" aria-hidden>
-          <div className="fly-neptune origin-center opacity-0">
-            <Planet name="neptune" shade="soft" glow="rgba(110,150,255,0.35)" className="w-full" sizes="300px" />
-          </div>
-        </div>
-        <div className="feather-y absolute inset-0 bg-gradient-to-b from-black/90 via-black/55 to-transparent [--feather:16%] sm:bg-gradient-to-r sm:from-black/85 sm:via-black/40" aria-hidden />
+        <div className="feather-y absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent [--feather:16%] sm:bg-gradient-to-r sm:from-black/70 sm:via-black/25" aria-hidden />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-start px-5 pt-24 sm:px-8 sm:pt-28">
           <p className="eyebrow mb-5">How it works</p>
@@ -98,13 +161,13 @@ export function HowItWorks() {
                 key={s.n}
                 className={clsx(
                   "border-l pl-5 transition-[opacity,border-color] duration-700",
-                  // every step stays readable; the one you're flying through is lit
+                  // every step stays readable; the current one is lit
                   step === i ? "border-flare opacity-100" : "border-white/15 opacity-70",
                 )}
               >
                 <p className="font-mono text-xs tracking-[0.18em] text-flare-soft">{s.n}</p>
                 <h3 className="mt-1 text-xl font-bold">{s.title}</h3>
-                {/* phones: only the step being flown through shows its detail, leaving room for the flight */}
+                {/* phones: only the current step shows its detail, leaving room for the Moon */}
                 <p className={clsx("mt-2 text-sm leading-relaxed text-star/75 sm:block", step === i ? "block" : "hidden")}>{s.body}</p>
               </li>
             ))}

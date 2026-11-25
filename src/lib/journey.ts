@@ -65,12 +65,12 @@ export const STOPS: Stop[] = [
   // 3 range: a soft warm bloom behind the cards (halos fixed to the screen drifted off the cards as they scrolled)
   { pos: [0, -0.2], r: 0.55, squash: 0.5, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [1, 0.78, 0.5], intensity: 0.1,
     skyTop: [0.008, 0.006, 0.012], skyLow: [0.03, 0.02, 0.02], neb: [0.05, 0.03, 0.025], dust: [1, 0.88, 0.7], dustDensity: 0.5, dustSpeed: 0.8, veil: [[0.95, 0.52, 0.62], [0.52, 0.38, 0.95]] },
-  // 4 how it works: a wide warm haze on the side of the section's own Sun photograph (never a second sun)
-  { pos: [0.34, 0.02], r: 0.45, squash: 1, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [1, 0.55, 0.22], intensity: 0.13,
-    skyTop: [0.02, 0.008, 0.004], skyLow: [0.08, 0.035, 0.012], neb: [0.08, 0.035, 0.01], dust: [1, 0.75, 0.45], dustDensity: 0.7, dustSpeed: 1.6, veil: [[1.0, 0.5, 0.18], [0.9, 0.28, 0.12]] },
-  // 5 proof: the Sun gone down to a line of glare on the horizon
-  { pos: [0, -0.34], r: 0.8, squash: 0.015, fill: 0, w: 0.003, split: 0, arc: 0, arcAng: 0, color: [1, 0.7, 0.4], intensity: 0.5,
-    skyTop: [0.012, 0.006, 0.006], skyLow: [0.06, 0.03, 0.015], neb: [0.05, 0.025, 0.012], dust: [1, 0.8, 0.55], dustDensity: 0.5, dustSpeed: 1, veil: [[1.0, 0.58, 0.3], [0.55, 0.38, 0.85]] },
+  // 4 how it works: moonlit night round the section's waxing Moon (a faint cool glow behind it, no warm wash)
+  { pos: [0.34, 0.02], r: 0.45, squash: 1, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [0.7, 0.8, 1], intensity: 0.06,
+    skyTop: [0.003, 0.005, 0.014], skyLow: [0.01, 0.014, 0.034], neb: [0.02, 0.03, 0.07], dust: [0.86, 0.91, 1], dustDensity: 0.6, dustSpeed: 0.8, mw: 0.5, veil: [[0.3, 0.42, 0.95], [0.42, 0.52, 0.88]] },
+  // 5 proof: a thin line of silver moonlight on the horizon, still night
+  { pos: [0, -0.34], r: 0.8, squash: 0.015, fill: 0, w: 0.003, split: 0, arc: 0, arcAng: 0, color: [0.78, 0.86, 1], intensity: 0.3,
+    skyTop: [0.003, 0.005, 0.013], skyLow: [0.012, 0.015, 0.032], neb: [0.02, 0.028, 0.06], dust: [0.86, 0.91, 1], dustDensity: 0.5, dustSpeed: 0.8, mw: 0.5, veil: [[0.36, 0.42, 0.95], [0.55, 0.4, 0.9]] },
   // 6 plant: a single sharp green-white star, up and to the right of the leaf (clear of its labels)
   { pos: [0.72, 0.28], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [0.75, 1, 0.55], intensity: 2.2,
     skyTop: [0.004, 0.008, 0.006], skyLow: [0.012, 0.025, 0.015], neb: [0.02, 0.045, 0.025], dust: [0.78, 0.92, 0.62], dustDensity: 0.55, dustSpeed: 0.8, veil: [[0.4, 0.85, 0.5], [0.3, 0.62, 0.9]] },
