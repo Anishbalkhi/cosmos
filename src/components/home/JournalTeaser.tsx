@@ -36,7 +36,7 @@ export function JournalTeaser() {
   const shown = hover ?? 0;
 
   return (
-    <section className="relative isolate overflow-hidden pt-16 pb-28 sm:pt-20 sm:pb-36" onPointerLeave={() => setHover(null)}>
+    <section className="relative isolate overflow-hidden pt-12 pb-16 sm:pt-16 sm:pb-20" onPointerLeave={() => setHover(null)}>
       <div className="feather-y absolute inset-0 -z-20 opacity-70 [--feather:26%]" aria-hidden>
         <ShaderCanvas frag={starTrailsFrag} uniforms={uniforms} scale={0.75} maxDpr={1.75} post={POST} />
       </div>

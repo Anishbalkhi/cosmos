@@ -3,8 +3,7 @@ import { Manifesto } from "@/components/home/Manifesto";
 import { NeedsWheel } from "@/components/home/NeedsWheel";
 import { TheRange } from "@/components/home/TheRange";
 import { HowItWorks } from "@/components/home/HowItWorks";
-import { ProofMarquee } from "@/components/home/ProofMarquee";
-import { ThePlant } from "@/components/home/ThePlant";
+import { TheStandards } from "@/components/home/TheStandards";
 import { JournalTeaser } from "@/components/home/JournalTeaser";
 import { ClosingCta } from "@/components/home/ClosingCta";
 import { UniverseStage } from "@/components/journey/UniverseStage";
@@ -33,11 +32,10 @@ export default function Home() {
       <div data-stop="4">
         <HowItWorks />
       </div>
-      <div data-stop="5">
-        <ProofMarquee />
-      </div>
+      {/* stops 5 and 6 share one seam: the old proof strip and plant are one section now */}
+      <div data-stop="5" aria-hidden />
       <div data-stop="6">
-        <ThePlant />
+        <TheStandards />
       </div>
       <div data-stop="7">
         <JournalTeaser />

@@ -53,7 +53,7 @@ export function ClosingCta() {
   }, []);
 
   return (
-    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-32 pb-[34vh] sm:pt-40">
+    <section ref={section} id="waitlist" className="relative isolate scroll-mt-24 overflow-hidden pt-20 pb-[26vh] sm:pt-24">
       {/* both ends dissolve: into the night of the journal above, and into the footer below (no hard edge) */}
       <div className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_35%,#000_78%,transparent)]" aria-hidden>
         {earth && <ShaderCanvas frag={dawnFrag} uniforms={uniforms} textures={textures} scale={0.75} maxDpr={1.75} post={POST} />}

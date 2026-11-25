@@ -77,7 +77,7 @@ export function HowItWorks() {
   }, []);
 
   return (
-    <section ref={section} className="relative h-[300vh]" aria-labelledby="how-title">
+    <section ref={section} className="relative h-[240vh]" aria-labelledby="how-title">
       <div className="sticky top-0 h-dvh overflow-hidden">
         {/* the Moon and its orbit */}
         <div
@@ -150,7 +150,7 @@ export function HowItWorks() {
         </div>
         <div className="feather-y absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent [--feather:16%] sm:bg-gradient-to-r sm:from-black/70 sm:via-black/25" aria-hidden />
 
-        <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-start px-5 pt-24 sm:px-8 sm:pt-28">
+        <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-start px-5 pt-24 sm:justify-center sm:px-8 sm:pt-16">
           <p className="eyebrow mb-5">How it works</p>
           <h2 id="how-title" className="display max-w-xl text-4xl sm:text-6xl lg:text-7xl">
             Start low. <em className="text-flare-soft">Go slow.</em>

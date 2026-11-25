@@ -71,8 +71,8 @@ export const STOPS: Stop[] = [
   // 4 how it works: moonlit night round the section's waxing Moon (a faint cool glow behind it, no warm wash)
   { pos: [0.34, 0.02], r: 0.45, squash: 1, fill: 1, w: 0.02, split: 0, arc: 0, arcAng: 0, color: [0.7, 0.8, 1], intensity: 0.06,
     skyTop: [0.003, 0.005, 0.014], skyLow: [0.01, 0.014, 0.034], neb: [0.02, 0.03, 0.07], dust: [0.86, 0.91, 1], dustDensity: 0.6, dustSpeed: 0.8, mw: 0.5, veil: [[0.3, 0.42, 0.95], [0.42, 0.52, 0.88]] },
-  // 5 proof: a thin line of silver moonlight on the horizon, still night
-  { pos: [0, -0.34], r: 0.8, squash: 0.015, fill: 0, w: 0.003, split: 0, arc: 0, arcAng: 0, color: [0.78, 0.86, 1], intensity: 0.3,
+  // 5 (shares its seam with 6 since the proof strip and the plant became one section): no light of its own
+  { pos: [0, -0.34], r: 0.8, squash: 0.015, fill: 0, w: 0.003, split: 0, arc: 0, arcAng: 0, color: [0.78, 0.86, 1], intensity: 0,
     skyTop: [0.003, 0.005, 0.013], skyLow: [0.012, 0.015, 0.032], neb: [0.02, 0.028, 0.06], dust: [0.86, 0.91, 1], dustDensity: 0.5, dustSpeed: 0.8, mw: 0.5, veil: [[0.36, 0.42, 0.95], [0.55, 0.4, 0.9]] },
   // 6 plant: a single sharp green-white star, up and to the right of the leaf (clear of its labels)
   { pos: [0.72, 0.28], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [0.75, 1, 0.55], intensity: 2.2,
