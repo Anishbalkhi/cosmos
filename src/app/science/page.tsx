@@ -9,7 +9,7 @@ import { DoseClock } from "@/components/ui/DoseClock";
 import { LabReports } from "@/components/science/LabReports";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { UniverseStage } from "@/components/journey/UniverseStage";
-import { SCIENCE_SKY } from "@/lib/journey";
+import { NIGHT_SKY } from "@/lib/journey";
 
 export const metadata: Metadata = {
   title: "The Science",
@@ -33,7 +33,7 @@ export default function SciencePage() {
   return (
     <>
       {/* one night sky behind the whole page (as on the home page): every section floats in it, no hard edges */}
-      <UniverseStage sky={SCIENCE_SKY} />
+      <UniverseStage sky={NIGHT_SKY} />
       <PageHeader
         blend
         visual="moon"

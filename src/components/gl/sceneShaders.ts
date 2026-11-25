@@ -153,3 +153,11 @@ void main(){
   col *= smoothstep(1.4, 0.3, length(uv));
   gl_FragColor = finish(col);
 }`;
+
+/**
+ * The same tilted black hole in the brand's warm light (gold and cream instead of teal): the Our Story
+ * header. It turns slowly; the edges fall to black so it can be screened onto the night sky.
+ */
+export const goldHoleFrag = tiltedHoleFrag
+  .replace("vec3 teal = vec3(0.35, 0.72, 0.68);", "vec3 teal = vec3(0.95, 0.58, 0.26);")
+  .replace("col += vec3(stars(uv + 3.0, 90.0)) * 0.25;", "");

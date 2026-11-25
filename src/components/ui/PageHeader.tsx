@@ -4,6 +4,7 @@ import { Container } from "./Section";
 import { MiniBlackHole } from "@/components/product/World";
 import { Planet, type PlanetName } from "@/components/space/Planet";
 import { ShaderCanvas } from "@/components/gl/ShaderCanvas";
+import { goldHoleFrag } from "@/components/gl/sceneShaders";
 
 // a soft atmosphere colour for each planet's glow
 const GLOW: Partial<Record<PlanetName, string>> = {
@@ -44,8 +45,10 @@ export function PageHeader({
   return (
     <section
       className={clsx(
-        "relative isolate overflow-hidden pt-16 pb-16 sm:pt-24 sm:pb-20",
-        !blend && "grain border-b border-line",
+        "relative pt-16 pb-16 sm:pt-24 sm:pb-20",
+        // a blended header is not its own stacking context, so its visual can be screened onto the sky behind the
+        // page, and it only clips sideways: the black hole's disk can run on below it instead of ending in a line
+        blend ? "overflow-x-clip" : "grain isolate overflow-hidden border-b border-line",
         scene && "flex min-h-[62vh] flex-col justify-end sm:min-h-[70vh]",
       )}
     >
@@ -62,22 +65,29 @@ export function PageHeader({
         <div
           data-parallax="0.3"
           className={clsx(
-            "absolute -z-10",
-            wide ? "top-[22%] -right-40 w-[460px] sm:right-[2%] sm:w-[440px]" : "top-[18%] -right-24 w-[340px] sm:right-[6%] sm:w-[300px]",
+            "absolute",
+            blend ? "z-0" : "-z-10",
+            visual === "blackhole"
+              ? // a live black hole, screened onto the sky; on phones it sits up in the corner, clear of the type, and
+                // on wide screens inside the content width (it was pinned to the far edge with its disk cut off)
+                "-top-10 -right-28 aspect-square w-[300px] opacity-60 mix-blend-screen [mask-image:radial-gradient(closest-side,#000_55%,transparent)] sm:top-[2%] sm:right-[max(2%,calc((100vw-80rem)/2))] sm:w-[560px] sm:opacity-100"
+              : wide
+                ? "top-[22%] -right-40 w-[460px] sm:right-[2%] sm:w-[440px]"
+                : "top-[18%] -right-24 w-[340px] sm:right-[6%] sm:w-[300px]",
             // on phones the planet sits behind the headline and intro: keep it dim enough to read over
-            visual === "blackhole" ? "opacity-80" : "opacity-30 sm:opacity-90",
+            visual !== "blackhole" && "opacity-30 sm:opacity-90",
           )}
         >
           {visual === "blackhole" ? (
-            <MiniBlackHole className="w-full" />
+            blend ? <ShaderCanvas frag={goldHoleFrag} scale={0.6} maxDpr={1.5} post={POST} /> : <MiniBlackHole className="w-full" />
           ) : (
             <Planet name={visual} shade={wide ? "none" : "soft"} glow={GLOW[visual]} className="w-full" sizes="(max-width: 640px) 340px, 300px" />
           )}
         </div>
       )}
-      <Container>
+      <Container className="relative z-10">
         <p className="eyebrow mb-6 text-flare-soft">{eyebrow}</p>
-        <h1 className="display max-w-4xl text-5xl sm:text-7xl lg:text-8xl">
+        <h1 className="display relative max-w-4xl text-5xl text-balance sm:text-7xl lg:text-8xl">
           {title}
         </h1>
         {intro && (

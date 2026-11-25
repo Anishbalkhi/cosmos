@@ -3,7 +3,10 @@
 import { usePathname } from "next/navigation";
 import { WaitlistForm } from "./WaitlistForm";
 
-/** The home page ends with its own waitlist, so the footer shows a short sign-off there instead of a second form. */
+// pages that already end with the waitlist section (ClosingCta): the footer signs off instead of a second form
+const HAS_WAITLIST = new Set(["/", "/our-story"]);
+
+/** On a page that already ends with the waitlist, the footer shows a short sign-off instead of a second form. */
 function Join({ home }: { home: boolean }) {
   if (home) {
     return (
@@ -24,7 +27,7 @@ function Join({ home }: { home: boolean }) {
 }
 
 export function FooterJoinActive() {
-  return <Join home={usePathname() === "/"} />;
+  return <Join home={HAS_WAITLIST.has(usePathname())} />;
 }
 
 export function FooterJoinFallback() {

@@ -327,7 +327,7 @@ void main(){
   float tall = clamp(uRes.y / uRes.x - 1.0, 0.0, 1.0);
   float bottom = -0.5 * uRes.y / min(uRes.x, uRes.y);
   // the Sun sits low in the section, under the form; a tall phone section needs it a little higher
-  vec2 sun = vec2(0.0, bottom + 0.27 + 0.12 * tall);
+  vec2 sun = vec2(0.0, bottom + 0.22 + 0.08 * tall);
   const float rs = 0.042;
   const float R = 0.46;
   // Earth comes up from below, a little from the left; at e = 1 the Sun is 0.035 behind its limb

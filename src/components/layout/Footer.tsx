@@ -49,17 +49,17 @@ export function Footer() {
   return (
     <footer data-stop="9" className="relative overflow-hidden">
       {/* extra room at the very bottom so the fixed "Sound off" pill never sits on the last row */}
-      <div className="mx-auto max-w-7xl px-5 pt-20 pb-24 sm:px-8 sm:pb-28">
+      <div className="mx-auto max-w-7xl px-5 pt-24 pb-20 sm:px-8 sm:pb-24">
         <div className="grid gap-14 lg:grid-cols-[1.3fr_2fr]">
           {/* reads the URL, so it sits inside Suspense (Cache Components) */}
           <Suspense fallback={<FooterJoinFallback />}>
             <FooterJoinActive />
           </Suspense>
 
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
+          <div className="grid grid-cols-[1.25fr_1fr_0.75fr] gap-4 sm:grid-cols-3 sm:gap-10">
             {COLUMNS.map((c) => (
               <div key={c.title}>
-                <p className="mb-5 font-mono text-[11px] tracking-[0.18em] text-dust uppercase">{c.title}</p>
+                <p className="mb-5 font-mono text-xs tracking-[0.16em] text-star/60 uppercase">{c.title}</p>
                 <ul className="space-y-3">
                   {c.links.map((l) => (
                     <li key={l.href}>
@@ -83,23 +83,24 @@ export function Footer() {
           className="relative mt-20 flex justify-center text-[17vw] leading-none [mask-image:linear-gradient(to_bottom,#000_45%,transparent_100%)] lg:text-[14.2rem]"
           aria-hidden
         >
-          <div className="absolute top-1/2 left-1/2 h-[60%] w-[30%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(159_198_87/0.22),transparent)] blur-2xl" />
-          <Wordmark className="relative tracking-[0.02em] text-star/90" />
+          {/* (no blur filter on the leaf's glow: it showed as a soft box behind the leaf) */}
+          <div className="absolute top-1/2 left-1/2 h-[80%] w-[34%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgb(159_198_87/0.16),transparent)]" />
+          <Wordmark className="relative tracking-[0.02em] text-star" />
         </div>
 
-        <div className="mt-6 flex flex-col gap-6 border-t border-line pt-8 text-xs text-dust lg:flex-row lg:items-start lg:justify-between">
+        <div className="mt-8 flex flex-col gap-6 text-xs text-dust lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-xl space-y-2 leading-relaxed">
             <p>
-              For adults 18+. Made from Cannabis sativa leaf extract under licence.
+              For adults 18+. Made from Cannabis sativa leaf extract under licence. Not intended to diagnose, treat, cure or prevent any disease; consult your
+              doctor before use.
             </p>
-            <p>These products are not intended to diagnose, treat, cure or prevent any disease. Consult your doctor before use.</p>
-            <p className="text-dust/70">Space imagery: NASA (SDO, Apollo 17, LRO, Viking, Hubble, Cassini, Voyager 2, Suomi NPP Black Marble) and NASA/ESA Hubble Orion mosaic (M. Robberto), public domain.</p>
+            <p className="text-dust/70">Space imagery: NASA and ESA (Hubble, SDO, Apollo 17, LRO, Viking, Cassini, Voyager 2, Suomi NPP), public domain.</p>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 font-mono text-[11px] tracking-[0.14em] uppercase">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
               {POLICIES.map((p) => (
                 <li key={p.href}>
-                  <Link href={p.href} className="transition-colors hover:text-star">
+                  <Link href={p.href} className="text-star/70 transition-colors hover:text-star">
                     {p.label}
                   </Link>
                 </li>
@@ -116,7 +117,7 @@ export function Footer() {
 
         {/* temporary preview notes (CLIENT-CHECKLIST.md): never in a production build unless asked for */}
         {SHOW_PREVIEW_NOTES && (
-          <div className="mt-8 flex flex-col gap-4 rounded-[22px] border border-dashed border-white/15 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <AccentSwitch />
             <p className="max-w-md text-xs text-dust sm:text-right">
               Preview build: prices, doses, ingredients and the licence number are placeholders until confirmed.

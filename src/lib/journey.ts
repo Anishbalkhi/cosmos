@@ -92,10 +92,10 @@ export const STOPS: Stop[] = [
 export const LAST = STOPS.length - 1;
 
 /**
- * The sky behind the Science page: one still stop, the deep night of the home page's lower half
+ * The sky behind the inner pages (Science, Our Story): one still stop, the deep night of the home page's lower half
  * (Milky Way, faint blue-violet veils, no light object), so its scenes float in the same space.
  */
-export const SCIENCE_SKY: Stop = {
+export const NIGHT_SKY: Stop = {
   pos: [0, 0], r: 0.004, squash: 1, fill: 1, w: 0.01, split: 0, arc: 0, arcAng: 0, color: [0.8, 0.88, 1], intensity: 0,
   skyTop: [0.002, 0.003, 0.01], skyLow: [0.008, 0.011, 0.028], neb: [0.015, 0.02, 0.05], dust: [0.86, 0.91, 1],
   dustDensity: 0, dustSpeed: 0.6, stars: 0.9, mw: 0.6, veil: [[0.3, 0.42, 0.95], [0.5, 0.36, 0.9]],
