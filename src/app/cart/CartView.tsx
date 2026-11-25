@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart, cartTotals } from "@/lib/cart";
 import { useMounted } from "@/lib/useMounted";
-import { inr, needOf } from "@/lib/data";
+import { inr, needOf, tone } from "@/lib/data";
 import { Container } from "@/components/ui/Section";
 import { QtyStepper } from "@/components/product/QtyStepper";
 import { ButtonLink } from "@/components/ui/Button";
@@ -48,7 +48,7 @@ export function CartView() {
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex flex-wrap justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-mono text-[11px] tracking-[0.16em] uppercase" style={{ color: l.product.color }}>
+                    <p className="font-mono text-[11px] tracking-[0.16em] uppercase" style={{ color: tone(l.product.color) }}>
                       For {needOf(l.product.need).name}
                     </p>
                     <Link href={`/products/${l.slug}`} className="display mt-1 block text-2xl hover:text-flare-soft sm:text-3xl">

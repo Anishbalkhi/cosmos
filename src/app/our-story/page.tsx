@@ -23,8 +23,8 @@ const PILLARS: ZoomStop[] = [
     body: "Every gummy is lab-tested, precisely dosed and clearly labelled. The care of a fine pharmacy, the taste of a maison.",
   },
   {
-    planet: "sun",
-    glow: "rgba(255,170,80,0.55)",
+    planet: "neptune",
+    glow: "rgba(110,150,255,0.45)",
     title: "The Cure",
     body: "Rest, balance, focus, ease. One belief: the right dose at the right moment is a quiet kind of medicine.",
   },

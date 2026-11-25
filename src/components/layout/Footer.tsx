@@ -118,7 +118,7 @@ export function Footer() {
         {SHOW_PREVIEW_NOTES && (
           <div className="mt-8 flex flex-col gap-4 rounded-[22px] border border-dashed border-white/15 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <AccentSwitch />
-            <p className="max-w-md text-xs text-dust/80 sm:text-right">
+            <p className="max-w-md text-xs text-dust sm:text-right">
               Preview build: prices, doses, ingredients and the licence number are placeholders until confirmed.
             </p>
           </div>

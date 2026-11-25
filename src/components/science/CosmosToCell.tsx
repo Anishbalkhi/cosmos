@@ -70,7 +70,7 @@ export function CosmosToCell() {
   }, []);
 
   return (
-    <section ref={section} className="relative bg-black" style={{ height: `${N * 100}vh` }} aria-labelledby="c2c-title">
+    <section ref={section} className="relative bg-black" style={{ height: `${N * 85}vh` }} aria-labelledby="c2c-title">
       <div className="sticky top-0 h-dvh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
           <ShaderCanvas frag={zoomFrag} uniforms={uniforms} textures={textures} scale={0.6} post={POST} />

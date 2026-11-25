@@ -111,13 +111,13 @@ float cellH(vec2 q, vec2 cam){
 }
 vec3 cellHaze(vec3 rd){
   float hor = exp(-max(rd.y + 0.04, 0.0) * 6.0);
-  return vec3(0.012, 0.03, 0.04) + vec3(0.95, 0.55, 0.3) * 0.32 * hor;
+  return vec3(0.01, 0.016, 0.04) + vec3(0.36, 0.46, 0.95) * 0.3 * hor;
 }
 vec3 sceneCell(vec2 uv, float zoom){
   vec2 su = uv / zoom;
   vec3 rd = look() * rotX(-0.13) * camRay(su);              // horizon in the upper third, dark sky above the headline
   vec3 ro = vec3(0.0, 0.3, -uTime * 0.12);
-  vec3 col = cellHaze(rd) + vec3(1.0, 0.78, 0.45) * stars(su * 0.9 + vec2(uTime * 0.004, uTime * 0.018), 22.0) * 1.1;
+  vec3 col = cellHaze(rd) + vec3(0.8, 0.88, 1.0) * stars(su * 0.9 + vec2(uTime * 0.004, uTime * 0.018), 22.0) * 1.1;
   float t = 0.05;
   bool hit = false;
   for (int i = 0; i < 90; i++) {
@@ -141,8 +141,8 @@ vec3 sceneCell(vec2 uv, float zoom){
     vec3 L = normalize(vec3(0.3, 0.75, -0.6));          // light from ahead: the membrane glows at grazing angles
     float diff = max(dot(n, L), 0.0);
     float fr = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
-    vec3 mem = vec3(0.36, 0.16, 0.07) * (0.2 + 0.95 * diff) + vec3(1.0, 0.72, 0.45) * fr * 0.7;
-    mem += vec3(0.9, 0.5, 0.25) * 0.22 * pow(lip, 3.0);
+    vec3 mem = vec3(0.1, 0.11, 0.26) * (0.2 + 0.95 * diff) + vec3(0.62, 0.72, 1.0) * fr * 0.7;
+    mem += vec3(0.45, 0.52, 0.95) * 0.22 * pow(lip, 3.0);
     // receptors: proteins standing out of the membrane; each briefly lights as a signal docks
     vec3 r = receptorAt(q);
     float body = r.z * exp(-r.x * r.x / 0.004);
@@ -152,11 +152,11 @@ vec3 sceneCell(vec2 uv, float zoom){
     mem = mix(mem, vec3(0.28, 0.5, 0.16) * (0.35 + diff) + vec3(0.6, 1.0, 0.4) * fr * 0.5, body * 0.85);
     mem += vec3(0.6, 1.0, 0.3) * core * (0.3 + 3.2 * act);
     float rip = r.z * exp(-sq((r.x - phase * 0.85) / 0.012)) * (1.0 - smoothstep(0.08, 0.42, phase));
-    mem += vec3(1.0, 0.8, 0.45) * rip * 1.3;
+    mem += vec3(0.7, 0.85, 1.0) * rip * 1.3;
     col = mix(mem, cellHaze(rd), 1.0 - exp(-t * 0.3));
   }
   // signalling molecules drifting down past the lens
-  col += vec3(1.0, 0.82, 0.5) * stars(su * 0.6 + vec2(0.0, uTime * 0.03), 14.0) * 0.6;
+  col += vec3(0.78, 0.88, 1.0) * stars(su * 0.6 + vec2(0.0, uTime * 0.03), 14.0) * 0.6;
   return col;
 }
 

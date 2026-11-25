@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { inr, needOf, products, site } from "@/lib/data";
+import { inr, needOf, products, site, tone } from "@/lib/data";
 import { AddToCartButton } from "@/components/product/AddToCart";
 import { PouchThumb } from "./CommerceBits";
 
@@ -38,7 +38,7 @@ export function EmptyOrbit({ title }: { title: string }) {
                 <PouchThumb product={p} id={`empty-${p.slug}`} />
               </Link>
               <div className="min-w-0 flex-1">
-                <p className="font-mono text-[11px] tracking-[0.16em] uppercase" style={{ color: p.color }}>
+                <p className="font-mono text-[11px] tracking-[0.16em] uppercase" style={{ color: tone(p.color) }}>
                   For {needOf(p.need).name}
                 </p>
                 <Link href={`/products/${p.slug}`} className="mt-0.5 block truncate font-semibold hover:text-flare-soft">

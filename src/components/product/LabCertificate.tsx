@@ -1,3 +1,4 @@
+import { tone } from "@/lib/data";
 import clsx from "clsx";
 import { LeafStar } from "@/components/brand/LeafStar";
 import { CoaLink } from "./CoaLink";
@@ -19,7 +20,7 @@ export function LabSeal({ id = "seal", className, color = "var(--color-flare)" }
         </defs>
         <circle cx="50" cy="50" r="47" fill="none" stroke={color} strokeOpacity="0.5" strokeWidth="0.6" />
         <circle cx="50" cy="50" r="30" fill="none" stroke={color} strokeOpacity="0.35" strokeWidth="0.4" strokeDasharray="1 2" />
-        <text fontSize="6.4" letterSpacing="2.6" fill="#f3eee6" fontFamily="var(--font-geist-mono)">
+        <text fontSize="6.4" letterSpacing="2.6" fill="var(--color-star)" fontFamily="var(--font-geist-mono)">
           <textPath href={`#${ring}`}>LAB TESTED · EVERY BATCH · INDEPENDENT LAB ·</textPath>
         </text>
       </svg>
@@ -53,7 +54,7 @@ export function LabCertificate({ batch, coaUrl, color, compact = false }: { batc
                 <span className="block text-sm font-semibold whitespace-nowrap">{t.name}</span>
                 {!compact && <span className="mt-1 block text-xs text-dust">{t.note}</span>}
               </span>
-              <span className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] whitespace-nowrap uppercase" style={{ borderColor: `${color}66`, color }}>
+              <span className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] tracking-[0.12em] whitespace-nowrap uppercase" style={{ borderColor: `${tone(color)}66`, color: tone(color) }}>
                 {published ? "Passed" : "At launch"}
               </span>
             </li>

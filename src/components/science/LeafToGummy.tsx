@@ -76,7 +76,7 @@ export function LeafToGummy({ steps }: { steps: ProcessStep[] }) {
                 key={s.n}
                 className={clsx(
                   "border-l pl-5 transition-[opacity,border-color] duration-700",
-                  active === i ? "border-leaf opacity-100" : "border-line opacity-45",
+                  active === i ? "border-leaf opacity-100" : "border-white/15 opacity-70",
                 )}
               >
                 <p className="font-mono text-xs tracking-[0.18em] text-leaf">{s.n}</p>

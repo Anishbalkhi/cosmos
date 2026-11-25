@@ -115,7 +115,7 @@ export function HowItWorks() {
                 const on = step >= i;
                 return (
                   <g key={m.label}>
-                    <circle cx={x} cy={y} r={on ? 1.6 : 1.1} fill={on ? "var(--color-flare)" : "#07080f"} stroke={on ? "none" : "rgb(243 238 230 / 0.4)"} strokeWidth="0.35" style={{ transition: "r 0.5s, fill 0.5s" }} />
+                    <circle cx={x} cy={y} r={on ? 1.6 : 1.1} fill={on ? "var(--color-flare)" : "var(--color-ink)"} stroke={on ? "none" : "rgb(243 238 230 / 0.4)"} strokeWidth="0.35" style={{ transition: "r 0.5s, fill 0.5s" }} />
                     <text
                       // phones: the steps say the same, and the labels would run off the screen
                       className="hidden sm:inline"
@@ -124,7 +124,7 @@ export function HowItWorks() {
                       textAnchor={Math.abs(lx) < 4 ? "middle" : lx > 0 ? "start" : "end"}
                       fontSize="3.6"
                       letterSpacing="0.6"
-                      fill={on ? "#f3eee6" : "#9d99a8"}
+                      fill={on ? "var(--color-star)" : "var(--color-dust)"}
                       fontFamily="var(--font-geist-mono)"
                       style={{ transition: "fill 0.5s" }}
                     >

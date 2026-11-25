@@ -49,29 +49,29 @@ export function OrbitJourney({ current, notes }: { current: number; notes?: Part
           const done = current >= 0 && i <= current;
           return (
             <g key={i}>
-              <circle cx={x} cy={y} r={i === 0 || i === 3 ? 9 : 6.5} fill="#07080f" stroke={done ? "var(--color-flare)" : "rgb(243 238 230 / 0.3)"} strokeWidth="1.2" />
+              <circle cx={x} cy={y} r={i === 0 || i === 3 ? 9 : 6.5} fill="var(--color-ink)" stroke={done ? "var(--color-flare)" : "rgb(243 238 230 / 0.3)"} strokeWidth="1.2" />
               {done && <circle cx={x} cy={y} r={i === 0 || i === 3 ? 4 : 3} fill="var(--color-flare)" />}
-              <text x={x} y={y + 26} textAnchor="middle" fontSize="9.5" letterSpacing="1.4" fill={done ? "#f3eee6" : "#9d99a8"} fontFamily="var(--font-geist-mono)">
+              <text x={x} y={y + 26} textAnchor="middle" fontSize="9.5" letterSpacing="1.4" fill={done ? "var(--color-star)" : "var(--color-dust)"} fontFamily="var(--font-geist-mono)">
                 {ORDER_STEPS[i].toUpperCase()}
               </text>
               {notes?.[i] && (
-                <text x={x} y={y + 39} textAnchor="middle" fontSize="8.5" fill="#9d99a8" fontFamily="var(--font-geist)">
+                <text x={x} y={y + 39} textAnchor="middle" fontSize="8.5" fill="var(--color-dust)" fontFamily="var(--font-geist)">
                   {notes[i]}
                 </text>
               )}
             </g>
           );
         })}
-        <text x={P0[0]} y={P0[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="#9d99a8" fontFamily="var(--font-geist-mono)">
+        <text x={P0[0]} y={P0[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-geist-mono)">
           BANGALORE
         </text>
-        <text x={P2[0]} y={P2[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="#9d99a8" fontFamily="var(--font-geist-mono)">
+        <text x={P2[0]} y={P2[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-geist-mono)">
           YOUR DOOR
         </text>
         {current >= 0 && (
           <g style={{ transform: `translate(${cx}px, ${cy}px)`, transition: "transform 1.6s cubic-bezier(0.22,1,0.36,1)" }}>
             <circle r="14" fill="var(--color-flare)" opacity="0.18" className="animate-ping" style={{ transformOrigin: "0 0" }} />
-            <circle r="5" fill="#fff4e0" style={{ filter: "drop-shadow(0 0 6px var(--color-flare))" }} />
+            <circle r="5" fill="var(--color-flare-soft)" style={{ filter: "drop-shadow(0 0 6px var(--color-flare))" }} />
           </g>
         )}
       </svg>

@@ -8,6 +8,7 @@
   --color-space: #040407;        /* page background */
   --color-space-2: #0b0b12;      /* raised surfaces, cards */
   --color-space-3: #15151f;      /* hover / inputs */
+  --color-ink: #07080f;          /* dark fills inside drawings (orbit dots, pouch print) */
   --color-star: #f3eee6;         /* main text */
   --color-dust: #9d99a8;         /* secondary text */
   --color-line: rgb(243 238 230 / 0.1);

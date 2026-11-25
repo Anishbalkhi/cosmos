@@ -79,7 +79,7 @@ export function JournalTeaser() {
                       <span className="display mt-3 block text-[2.1rem] leading-[1.02] transition-transform duration-700 ease-cosmic group-hover:translate-x-2 sm:text-5xl xl:text-6xl">
                         {a.title}
                       </span>
-                      <span className="mt-4 block max-w-xl text-sm leading-relaxed text-star/70 sm:text-base">{a.excerpt}</span>
+                      <span className="mt-4 block max-w-xl text-sm leading-relaxed text-dust sm:text-base">{a.excerpt}</span>
                     </span>
                     <span className="flex flex-col items-end gap-4 pt-1">
                       <span className="grid h-12 w-12 place-items-center rounded-full border border-line transition-[transform,background-color,border-color,color] duration-500 group-hover:-rotate-45 group-hover:border-flare group-hover:bg-flare group-hover:text-space">

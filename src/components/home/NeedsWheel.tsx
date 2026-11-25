@@ -182,7 +182,7 @@ export function NeedsWheel() {
           <h2 id="orbit-title" className="sr-only">
             What do you need more of?
           </h2>
-          <p className="mt-3 font-mono text-xs tracking-[0.18em] text-star/60" aria-hidden>
+          <p className="mt-3 font-mono text-xs tracking-[0.18em] text-dust" aria-hidden>
             What do you need more of? · {String(active + 1).padStart(2, "0")} / {String(N).padStart(2, "0")}
           </p>
           <div className="relative mt-4 sm:mt-6">

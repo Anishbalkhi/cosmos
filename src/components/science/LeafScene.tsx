@@ -18,12 +18,12 @@ export function LeafScene({ className }: { className?: string }) {
         <ShaderCanvas frag={leafFrag} post={POST} scale={0.9} maxDpr={1.75} />
       </div>
       <div aria-hidden className="pointer-events-none absolute inset-0 font-mono text-[10px] tracking-[0.18em] uppercase sm:text-[11px]">
-        <p className="absolute top-[20%] right-[14%] text-right text-star/70">
+        <p className="absolute top-[20%] right-[14%] text-right text-dust">
           Fan leaf · 7 leaflets
           <br />
           <span className="text-leaf">What we use</span>
         </p>
-        <p className="absolute bottom-[24%] left-[16%] text-star/70">
+        <p className="absolute bottom-[24%] left-[16%] text-dust">
           Every batch
           <br />
           <span className="text-leaf">Lab scanned</span>

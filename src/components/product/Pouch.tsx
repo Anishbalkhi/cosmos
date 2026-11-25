@@ -45,27 +45,27 @@ export function Pouch({
         <rect x="18" y="26" width="164" height="3" fill="#000" opacity="0.18" />
         <rect x="18" y="31" width="164" height="1.5" fill="#fff" opacity="0.18" />
         {/* art window */}
-        <circle cx="100" cy="128" r="58" fill="#07080f" opacity="0.88" />
+        <circle cx="100" cy="128" r="58" fill="var(--color-ink)" opacity="0.88" />
         <GlyphArt glyph={glyph} />
         {/* shine */}
         <rect x="-40" width="140" height="280" fill={`url(#${g}-shine)`} />
       </g>
 
       {/* tear notches */}
-      <path d="M18 18 l5 2 -5 2 Z M182 18 l-5 2 5 2 Z" fill="#07080f" />
+      <path d="M18 18 l5 2 -5 2 Z M182 18 l-5 2 5 2 Z" fill="var(--color-ink)" />
 
       {/* label */}
-      <text x="100" y="54" textAnchor="middle" fill="#07080f" fontSize="11" letterSpacing="3" fontFamily="var(--font-montserrat)">
+      <text x="100" y="54" textAnchor="middle" fill="var(--color-ink)" fontSize="11" letterSpacing="3" fontFamily="var(--font-montserrat)">
         COSMOS
       </text>
-      <text x="100" y="214" textAnchor="middle" fill="#07080f" fontSize="15" fontWeight="800" fontFamily="var(--font-montserrat)">
+      <text x="100" y="214" textAnchor="middle" fill="var(--color-ink)" fontSize="15" fontWeight="800" fontFamily="var(--font-montserrat)">
         {name.toUpperCase()}
       </text>
-      <text x="100" y="234" textAnchor="middle" fill="#07080f" fontSize="6.6" letterSpacing="1" fontFamily="var(--font-geist-mono)" opacity="0.8">
+      <text x="100" y="234" textAnchor="middle" fill="var(--color-ink)" fontSize="6.6" letterSpacing="1" fontFamily="var(--font-geist-mono)" opacity="0.8">
         {meta}
       </text>
-      <line x1="70" y1="246" x2="130" y2="246" stroke="#07080f" strokeOpacity="0.35" />
-      <text x="100" y="258" textAnchor="middle" fill="#07080f" fontSize="5.2" letterSpacing="0.6" fontFamily="var(--font-geist-mono)" opacity="0.7">
+      <line x1="70" y1="246" x2="130" y2="246" stroke="var(--color-ink)" strokeOpacity="0.35" />
+      <text x="100" y="258" textAnchor="middle" fill="var(--color-ink)" fontSize="5.2" letterSpacing="0.6" fontFamily="var(--font-geist-mono)" opacity="0.7">
         LEAF EXTRACT · LAB TESTED
       </text>
     </svg>
@@ -76,7 +76,7 @@ export function Pouch({
 export function GlyphBadge({ glyph, className }: { glyph: Glyph; className?: string }) {
   return (
     <svg viewBox="36 64 128 128" className={className} aria-hidden>
-      <circle cx="100" cy="128" r="62" fill="#07080f" />
+      <circle cx="100" cy="128" r="62" fill="var(--color-ink)" />
       <GlyphArt glyph={glyph} />
     </svg>
   );

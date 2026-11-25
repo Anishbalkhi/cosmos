@@ -438,7 +438,7 @@ export function BlackHoleHero() {
         {/* while the arrival plays: scrolling fast-forwards it, so say so */}
         <p
           className={clsx(
-            "pointer-events-none absolute inset-x-0 bottom-7 z-10 text-center font-mono text-[11px] tracking-[0.2em] text-star/70 uppercase transition-opacity duration-700",
+            "pointer-events-none absolute inset-x-0 bottom-7 z-10 text-center font-mono text-[11px] tracking-[0.2em] text-dust uppercase transition-opacity duration-700",
             arriving && glReady ? "opacity-100 delay-1000" : "opacity-0",
           )}
           aria-hidden

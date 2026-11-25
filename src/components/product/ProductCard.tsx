@@ -20,12 +20,12 @@ export function ProductCard({ product }: { product: Product; index?: number }) {
               {product.name}
             </Link>
           </h3>
-          <p className="mt-2 text-sm text-star/70">{product.tagline}</p>
+          <p className="mt-2 text-sm text-dust">{product.tagline}</p>
         </div>
         <div className="mt-auto flex items-end justify-between gap-3">
           <div>
             <p className="text-lg font-semibold">{inr(product.price)}</p>
-            <p className="text-[13px] text-star/65">
+            <p className="text-[13px] text-dust">
               {product.count} gummies · {product.mgPerGummy} mg each
             </p>
           </div>

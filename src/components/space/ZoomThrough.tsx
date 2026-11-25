@@ -29,17 +29,22 @@ export function ZoomThrough({ stops, eyebrow }: { stops: ZoomStop[]; eyebrow: st
       });
       gsap.set(worlds, { scale: 0.02, opacity: 0 });
       gsap.set(caps, { opacity: 0, y: 30 });
+      // the first world and its caption are already there when the section arrives (no empty black screen)
+      gsap.set(worlds[0], { scale: 0.42, opacity: 1 });
+      gsap.set(caps[0], { opacity: 1, y: 0 });
       worlds.forEach((w, i) => {
         const last = i === worlds.length - 1;
         // emerges from the centre of the previous world...
-        tl.to(w, { scale: 0.42, opacity: 1, duration: 0.5, ease: "power2.out" }, i === 0 ? 0 : i - 0.45);
+        if (i > 0) tl.to(w, { scale: 0.42, opacity: 1, duration: 0.5, ease: "power2.out" }, i - 0.45);
         tl.to(w, { scale: last ? 0.9 : 0.75, duration: 0.45 }, i + 0.05);
-        tl.to(caps[i], { opacity: 1, y: 0, duration: 0.25 }, i + 0.05);
+        if (i > 0) tl.to(caps[i], { opacity: 1, y: 0, duration: 0.25 }, i + 0.05);
         if (!last) {
           // ...then rushes past the camera as the cut happens
-          tl.to(w, { scale: 9, opacity: 0, duration: 0.55, ease: "power3.in" }, i + 0.5);
+          // it fades before it fills the screen (a full-screen planet photo behind the next one was too busy)
+          tl.to(w, { scale: 9, duration: 0.55, ease: "power3.in" }, i + 0.5);
+          tl.to(w, { opacity: 0, duration: 0.3, ease: "power1.in" }, i + 0.5);
           tl.to(caps[i], { opacity: 0, y: -30, duration: 0.2 }, i + 0.6);
-          tl.fromTo(".zt-flash", { opacity: 0 }, { opacity: 0.5, duration: 0.08, yoyo: true, repeat: 1 }, i + 0.92);
+          tl.fromTo(".zt-flash", { opacity: 0 }, { opacity: 0.22, duration: 0.08, yoyo: true, repeat: 1 }, i + 0.92);
         }
       });
     }, el);
@@ -51,7 +56,7 @@ export function ZoomThrough({ stops, eyebrow }: { stops: ZoomStop[]; eyebrow: st
     <section
       ref={root}
       className="relative h-[var(--zt-h)] bg-black motion-reduce:h-auto"
-      style={{ "--zt-h": `${stops.length * 110 + 40}vh` } as React.CSSProperties}
+      style={{ "--zt-h": `${stops.length * 95 + 20}vh` } as React.CSSProperties}
     >
       <div className="sticky top-0 grid h-dvh place-items-center overflow-hidden motion-reduce:static motion-reduce:h-auto motion-reduce:gap-10 motion-reduce:py-32">
         <div
@@ -77,6 +82,8 @@ export function ZoomThrough({ stops, eyebrow }: { stops: ZoomStop[]; eyebrow: st
         <p className="eyebrow absolute top-24 left-1/2 -translate-x-1/2 whitespace-nowrap sm:top-28 motion-reduce:relative motion-reduce:inset-auto motion-reduce:translate-x-0">
           {eyebrow}
         </p>
+        {/* a dark floor under the captions, so they read over any world */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-black/85 via-black/45 to-transparent motion-reduce:hidden" aria-hidden />
         {stops.map((s) => (
           <div key={s.title} className="zt-cap absolute inset-x-0 bottom-[10%] px-6 text-center motion-reduce:relative motion-reduce:bottom-auto">
             <h2 className="display text-5xl sm:text-7xl">{s.title}</h2>

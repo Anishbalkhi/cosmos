@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
 import { universeFrag } from "@/components/gl/journeyShaders";
 import { driveJourney, journey, lightsAt, stopAt } from "@/lib/journey";
@@ -17,8 +17,23 @@ export function UniverseStage() {
   const [reduced] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(() => driveJourney(), []);
 
+  // the brand accent as linear-ish 0..1 RGB, re-read when the accent preview switches
+  const accent = useRef<[number, number, number]>([1, 0.72, 0.43]);
+  useEffect(() => {
+    const read = () => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb").trim().split(/\s+/).map(Number);
+      if (v.length === 3 && v.every(Number.isFinite)) accent.current = [v[0] / 255, v[1] / 255, v[2] / 255];
+    };
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-accent"] });
+    return () => mo.disconnect();
+  }, []);
+
   const uniforms = useCallback(() => {
     const s = stopAt(journey.t);
+    const tint = (c: [number, number, number], on: boolean): [number, number, number] =>
+      on ? [accent.current[0], accent.current[1], accent.current[2]] : c;
     const { a, b, k } = lightsAt(journey.t);
     // reduced motion draws one still frame: sky and stars only, no light that would sit in the wrong place
     const on = reduced ? 0 : 1;
@@ -27,13 +42,13 @@ export function UniverseStage() {
       uAShape: [a.r, a.squash, a.fill] as [number, number, number],
       uALine: [a.w, a.split, a.arc] as [number, number, number],
       uAAng: a.arcAng,
-      uACol: a.color,
+      uACol: tint(a.color, !!a.accent),
       uAInt: a.intensity * on,
       uBPos: b.pos,
       uBShape: [b.r, b.squash, b.fill] as [number, number, number],
       uBLine: [b.w, b.split, b.arc] as [number, number, number],
       uBAng: b.arcAng,
-      uBCol: b.color,
+      uBCol: tint(b.color, !!b.accent),
       uBInt: b.intensity * on,
       uLMix: k,
       uSkyTop: s.skyTop,

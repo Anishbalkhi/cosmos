@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getProduct } from "@/lib/data";
+import { getProduct, tone } from "@/lib/data";
 import { ShaderCanvas, type PostSettings } from "@/components/gl/ShaderCanvas";
 import { gummyFrag } from "@/components/gl/objectShaders";
 import { GUMMY, rgb } from "./colors";
@@ -62,9 +62,9 @@ export function IngredientOrbit({ slug }: { slug: string }) {
                   className="origin-center animate-spin"
                   style={{ animationDuration: `${14 + i * 7}s`, animationDirection: i % 2 ? "reverse" : "normal" }}
                 />
-                <circle cx={x} cy={y} r="3.6" fill="#07080f" stroke={p.color} strokeWidth="0.5" />
+                <circle cx={x} cy={y} r="3.6" fill="var(--color-ink)" stroke={tone(p.color)} strokeWidth="0.5" />
                 <circle cx={x} cy={y} r="5.5" fill={p.color} opacity="0.12" />
-                <text x={x} y={y + 1.25} textAnchor="middle" fontSize="3.4" fill="#f3eee6" fontFamily="var(--font-geist-mono)">
+                <text x={x} y={y + 1.25} textAnchor="middle" fontSize="3.4" fill="var(--color-star)" fontFamily="var(--font-geist-mono)">
                   {String(i + 1).padStart(2, "0")}
                 </text>
               </g>
@@ -77,7 +77,7 @@ export function IngredientOrbit({ slug }: { slug: string }) {
         <ol className="divide-y divide-line border-y border-line">
           {actives.map((ing, i) => (
             <li key={ing.name} className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-2 py-5">
-              <span className="font-mono text-xs tracking-[0.16em]" style={{ color: p.color }}>
+              <span className="font-mono text-xs tracking-[0.16em]" style={{ color: tone(p.color) }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="text-base text-star/90">{ing.name}</span>

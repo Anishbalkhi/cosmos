@@ -198,7 +198,7 @@ export function Intro() {
           width: "calc(var(--r) * 2)",
           height: "calc(var(--r) * 2)",
           transform: "translate(-50%, -50%)",
-          boxShadow: "0 0 0 1.5px #fff3e4, 0 0 40px 6px rgb(var(--accent-rgb) / 0.75), inset 0 0 30px 4px rgb(var(--accent-soft-rgb) / 0.55)",
+          boxShadow: "0 0 0 1.5px rgb(var(--accent-soft-rgb)), 0 0 40px 6px rgb(var(--accent-rgb) / 0.75), inset 0 0 30px 4px rgb(var(--accent-soft-rgb) / 0.55)",
         }}
       />
 
@@ -215,7 +215,7 @@ export function Intro() {
       >
         <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(1px_1px_at_10%_20%,#fff_50%,transparent_51%),radial-gradient(1px_1px_at_80%_30%,#fff_50%,transparent_51%),radial-gradient(1.5px_1.5px_at_40%_70%,#fff_50%,transparent_51%),radial-gradient(1px_1px_at_65%_85%,#fff_50%,transparent_51%),radial-gradient(1px_1px_at_25%_55%,#fff_50%,transparent_51%),radial-gradient(1px_1px_at_92%_65%,#fff_50%,transparent_51%),radial-gradient(ellipse_at_50%_120%,rgb(var(--accent-rgb)/0.22),transparent_60%)]" />
 
-        <div className="relative flex items-center justify-between px-5 pt-5 font-mono text-[11px] tracking-[0.18em] text-star/70 uppercase sm:px-8 sm:text-xs">
+        <div className="relative flex items-center justify-between px-5 pt-5 font-mono text-[11px] tracking-[0.18em] text-dust uppercase sm:px-8 sm:text-xs">
           <span className="flex items-center gap-2">
             <LeafStar className="h-4 w-4" /> Cosmos
           </span>
@@ -274,7 +274,7 @@ export function Intro() {
                   the <em className="text-flare-soft">Cosmos</em>
                 </span>
               </div>
-              <p className="in-legal mt-12 text-center text-sm text-star/70">
+              <p className="in-legal mt-12 text-center text-sm text-dust">
                 By entering you confirm you are 18 or older.{" "}
                 <button className="underline underline-offset-4 hover:text-star" onClick={() => setPhase("denied")} disabled={phase !== "start"}>
                   I&rsquo;m under 18
@@ -293,7 +293,7 @@ export function Intro() {
 
         <div className="in-sound relative flex flex-col items-center gap-3 px-5 pb-8 text-center">
           <SoundToggle />
-          <p className="max-w-xs font-mono text-[11px] leading-relaxed tracking-[0.16em] text-star/60 uppercase">
+          <p className="max-w-xs font-mono text-[11px] leading-relaxed tracking-[0.16em] text-dust uppercase">
             To make this experience more immersive we use sound effects
           </p>
         </div>

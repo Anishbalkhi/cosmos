@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, inr, needOf, products, site } from "@/lib/data";
+import { getProduct, inr, needOf, products, site, tone } from "@/lib/data";
 import { Container } from "@/components/ui/Section";
 import { GlyphBadge } from "@/components/product/Pouch";
 import { PouchScene } from "@/components/product/PouchScene";
@@ -56,7 +56,7 @@ async function ProductPageContent({ params }: { params: PageProps<"/products/[sl
             <span className="pointer-events-none absolute top-5 left-5 rounded-full border border-white/20 bg-black/30 px-3 py-1 font-mono text-[11px] tracking-[0.16em] uppercase backdrop-blur">
               For {need.name}
             </span>
-            <span className="pointer-events-none absolute right-5 bottom-5 font-mono text-[11px] tracking-[0.16em] text-star/60 uppercase">Drag to turn</span>
+            <span className="pointer-events-none absolute right-5 bottom-5 font-mono text-[11px] tracking-[0.16em] text-dust uppercase">Drag to turn</span>
           </div>
 
           <div className="flex flex-col justify-center">
@@ -98,10 +98,10 @@ async function ProductPageContent({ params }: { params: PageProps<"/products/[sl
       </section>
 
       {/* story of the name */}
-      <section className="border-y border-line py-24 sm:py-32" style={{ background: `linear-gradient(180deg, ${p.color}14, transparent)` }}>
+      <section className="py-24 sm:py-32" style={{ background: `linear-gradient(180deg, transparent, ${tone(p.color)}10 30%, ${tone(p.color)}10 70%, transparent)` }}>
         <Container className="grid items-center gap-12 lg:grid-cols-2">
           <Reveal>
-            <p className="eyebrow mb-5" style={{ color: p.color }}>
+            <p className="eyebrow mb-5" style={{ color: tone(p.color) }}>
               The story of the name
             </p>
             <h2 className="display text-5xl sm:text-6xl">{p.name}</h2>

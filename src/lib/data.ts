@@ -155,6 +155,19 @@ export const comingSoon = {
  */
 export const reservedNames = ["Singularity"] as const;
 
+/**
+ * A product colour as UI ink: mixed a third of the way to the page's warm white, so text, badges and glows
+ * read on the dark page (the raw colours are for the pouch art) and all four sit in one family with the
+ * site's gold, green and ice.
+ */
+export function tone(hex: string, amt = 0.38) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const star = [243, 238, 230];
+  const out = ch.map((c, i) => Math.round(c + (star[i] - c) * amt));
+  return `#${out.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
 export function getProduct(slug: string) {
   return products.find((p) => p.slug === slug);
 }
