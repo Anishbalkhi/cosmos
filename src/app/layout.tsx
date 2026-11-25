@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif, Montserrat } from "next/font/google";
+import { Geist, Montserrat } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
 import "./globals.css";
@@ -17,10 +17,9 @@ import { SfxListener } from "@/components/layout/SfxListener";
 /* Type system (cinematic gold-space theme), three families plus the logo:
    Instrument Serif – headlines and the gold italic accents · Geist – body and interface
    Geist Mono – labels, navigation, data, prices · Montserrat – logo wordmark only */
-const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], weight: ["400", "700", "800"] });
-const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
+// the logo is set in Montserrat: it is the site's display and label face too (light headings, wide caps labels)
+const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], style: ["normal", "italic"] });
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cosmoscannabis.in"),
@@ -39,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${montserrat.variable} ${instrument.variable} ${geist.variable} ${geistMono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en-IN" className={`${montserrat.variable} ${geist.variable} `} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
         <Script id="intro-skip" strategy="beforeInteractive">
           {introSkipScript}

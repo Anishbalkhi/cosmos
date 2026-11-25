@@ -68,7 +68,7 @@ export function Manifesto() {
       {/* scrim under the paragraph so the ring and rocks never cut into the text */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_75%_55%_at_40%_62%,rgb(0_0_0/0.75),transparent_78%)]" />
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <p className="bracket mb-10 text-flare-soft">[ Manifesto ]</p>
+        <p className="bracket mb-10 text-flare-soft">Manifesto</p>
         <p ref={ref} className="display text-4xl leading-[1.08] sm:text-6xl lg:text-7xl">
           {TEXT.split(" ").map((w, i) => (
             <span key={i} className={HIGHLIGHT.has(w) ? "text-flare-soft italic" : undefined} style={{ opacity: 0.14 }}>

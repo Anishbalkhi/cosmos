@@ -47,7 +47,7 @@ export default function StoryPage() {
           <Reveal>
             <p className="eyebrow text-star/60">A letter from the founders</p>
             <h2 className="display mt-5 text-4xl sm:text-5xl">Why we built this</h2>
-            <div className="mt-8 max-w-[36rem] space-y-6 font-[family-name:var(--font-instrument)] text-[1.35rem] leading-[1.4] sm:text-[1.6rem]">
+            <div className="mt-8 max-w-[36rem] space-y-6 font-[family-name:var(--font-montserrat)] text-[1.15rem] leading-[1.55] font-light sm:text-[1.35rem]">
               {/* PLACEHOLDER: founders' letter from the client */}
               <p className="text-star/70">
                 For years, the people we knew who found relief in cannabis talked about it in lowered voices, bought it from people they didn&rsquo;t trust, and
@@ -60,7 +60,7 @@ export default function StoryPage() {
             </div>
             <p className="mt-8 flex items-center gap-3 text-star/75">
               <LeafStar className="h-7 w-7" />
-              <span className="font-[family-name:var(--font-instrument)] text-xl italic">
+              <span className="font-[family-name:var(--font-montserrat)] text-base font-light italic">
                 <Placeholder note="founders' names" fallback="The Cosmos founders">
                   The Cosmos founders
                 </Placeholder>

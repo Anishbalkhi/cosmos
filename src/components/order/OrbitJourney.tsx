@@ -51,7 +51,7 @@ export function OrbitJourney({ current, notes }: { current: number; notes?: Part
             <g key={i}>
               <circle cx={x} cy={y} r={i === 0 || i === 3 ? 9 : 6.5} fill="var(--color-ink)" stroke={done ? "var(--color-flare)" : "rgb(243 238 230 / 0.3)"} strokeWidth="1.2" />
               {done && <circle cx={x} cy={y} r={i === 0 || i === 3 ? 4 : 3} fill="var(--color-flare)" />}
-              <text x={x} y={y + 26} textAnchor="middle" fontSize="9.5" letterSpacing="1.4" fill={done ? "var(--color-star)" : "var(--color-dust)"} fontFamily="var(--font-geist-mono)">
+              <text x={x} y={y + 26} textAnchor="middle" fontSize="9.5" letterSpacing="1.4" fill={done ? "var(--color-star)" : "var(--color-dust)"} fontFamily="var(--font-montserrat)">
                 {ORDER_STEPS[i].toUpperCase()}
               </text>
               {notes?.[i] && (
@@ -62,10 +62,10 @@ export function OrbitJourney({ current, notes }: { current: number; notes?: Part
             </g>
           );
         })}
-        <text x={P0[0]} y={P0[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-geist-mono)">
+        <text x={P0[0]} y={P0[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-montserrat)">
           BANGALORE
         </text>
-        <text x={P2[0]} y={P2[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-geist-mono)">
+        <text x={P2[0]} y={P2[1] - 18} textAnchor="middle" fontSize="8" letterSpacing="1.2" fill="var(--color-dust)" fontFamily="var(--font-montserrat)">
           YOUR DOOR
         </text>
         {current >= 0 && (

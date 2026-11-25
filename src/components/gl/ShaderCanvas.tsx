@@ -131,10 +131,31 @@ export function ShaderCanvas({
     if (!host) return;
     const settings: PostSettings | null = postKey ? JSON.parse(postKey) : null;
 
+    // Set up only once the scene is near the screen (within 3/4 of a screen). Creating every context and
+    // compiling every shader at mount froze the page for over a second while the loading bar ran: the home
+    // page alone has about ten scenes, most of them far below the fold.
+    let cleanup: (() => void) | undefined;
+    let started = false;
+    const near = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting || started) return;
+        started = true;
+        near.disconnect();
+        setup();
+      },
+      { rootMargin: "75% 0px 75% 0px" },
+    );
+    near.observe(host);
+    return () => {
+      near.disconnect();
+      cleanup?.();
+    };
+
+    function setup(this: void, el: HTMLDivElement = host!) {
     // a fresh canvas per mount: a context lost in cleanup can't be reused (React dev double-mount)
     const canvas = document.createElement("canvas");
     canvas.style.cssText = "display:block;width:100%;height:100%";
-    host.appendChild(canvas);
+    el.appendChild(canvas);
     const attrs: WebGLContextAttributes = { antialias: false, alpha: true, premultipliedAlpha: false };
     let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
     let hdr = false;
@@ -437,7 +458,7 @@ export function ShaderCanvas({
       once();
     } else raf = requestAnimationFrame(loop);
 
-    return () => {
+    cleanup = () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
@@ -446,6 +467,7 @@ export function ShaderCanvas({
       g.getExtension("WEBGL_lose_context")?.loseContext();
       canvas.remove();
     };
+    }
   }, [frag, maxDpr, scale, textures, postKey]);
 
   return <div ref={ref} className={clsx("h-full w-full", className)} aria-hidden />;

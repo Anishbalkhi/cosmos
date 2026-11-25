@@ -199,7 +199,7 @@ export function NeedsWheel() {
                   )}
                   aria-hidden={!on}
                 >
-                  <p className="display text-[22vw] leading-[0.85] sm:text-[9rem] lg:text-[11rem]">{n.name}</p>
+                  <p className="display text-[16vw] leading-[0.9] sm:text-[6.75rem] lg:text-[8.25rem]">{n.name}</p>
                   <p className="mx-auto mt-4 max-w-md text-base text-star/80 [text-shadow:0_2px_18px_rgb(0_0_0/0.9)] sm:text-lg">{n.line}</p>
                   <div className={clsx("mt-6", on ? "pointer-events-auto" : "pointer-events-none")}>
                     {product ? (

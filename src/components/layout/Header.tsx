@@ -36,9 +36,9 @@ function DesktopLinks({ pathname }: { pathname: string }) {
           )}
           aria-current={pathname.startsWith(n.href) ? "page" : undefined}
         >
-          <span className="opacity-40 transition-opacity group-hover:opacity-100">[</span>
+          
           {n.label}
-          <span className="opacity-40 transition-opacity group-hover:opacity-100">]</span>
+          
         </Link>
       ))}
     </>

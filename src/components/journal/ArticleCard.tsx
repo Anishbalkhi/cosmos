@@ -42,7 +42,7 @@ export function ArticleCover({ article, className = "", size = "md" }: { article
           <span>Issue {issueOf(article)}</span>
           <span>{month}</span>
         </div>
-        <p className={`serif-display mt-1 leading-none tracking-[0.02em] ${size === "lg" ? "text-[17vw] sm:text-[9vw] lg:text-[7.5rem]" : "text-[18vw] sm:text-[8vw] md:text-[5.2vw] lg:text-[4.6rem]"}`}>
+        <p className={`serif-display mt-1 leading-none tracking-[0.12em] ${size === "lg" ? "text-[12vw] sm:text-[6.5vw] lg:text-[5.4rem]" : "text-[13vw] sm:text-[5.8vw] md:text-[3.8vw] lg:text-[3.3rem]"}`}>
           COSMOS
         </p>
       </div>

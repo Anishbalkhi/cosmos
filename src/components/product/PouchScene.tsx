@@ -30,14 +30,26 @@ export function PouchScene({ slug, turntable = false, className }: { slug: strin
   const [tex, setTex] = useState<PouchTextures | null>(null);
   const s = useRef({ hover: 0, th: 0, lx: 0, ly: 0, tlx: 0, tly: 0, spin: 0, vel: 0, drag: false, px: 0, yaw: 0, orbit: 0, last: 0 });
 
+  // the printed label is drawn on a large canvas: only once the card is near the screen, so the three cards
+  // below the fold don't add to the work while the loading bar runs
   useEffect(() => {
-    if (!product) return;
+    const el = host.current;
+    if (!product || !el) return;
     let alive = true;
-    pouchTextures(product)
-      .then((t) => alive && setTex(t))
-      .catch(() => {});
+    const near = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        near.disconnect();
+        pouchTextures(product)
+          .then((t) => alive && setTex(t))
+          .catch(() => {});
+      },
+      { rootMargin: "75% 0px 75% 0px" },
+    );
+    near.observe(el);
     return () => {
       alive = false;
+      near.disconnect();
     };
   }, [product]);
 

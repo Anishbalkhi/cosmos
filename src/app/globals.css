@@ -19,8 +19,8 @@
   --color-ice: #9cc2ff;          /* galaxy blue, secondary accent */
 
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 
   --ease-cosmic: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -104,47 +104,67 @@
 }
 
 @layer components {
-  /* Small uppercase label above headings: mono, tracked out, gold */
+  /* Typography follows the logo: Montserrat for display and labels (light headings, wide caps), Geist for reading.
+     Small uppercase label above headings: Montserrat caps, tracked out like the wordmark, gold */
   .eyebrow {
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 0.72rem;
-    font-weight: 500;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
     line-height: 1.4;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--color-flare-soft);
   }
-  /* Display headlines: Instrument Serif, a high-contrast editorial cut that holds up from
-     card titles to the 13rem hero. One weight only, so never let the browser fake a bold. */
+  /* Display headlines: Montserrat Light, the logo's geometry at a calm weight. Montserrat is far wider
+     than the condensed serif it replaced, so headings run at about 0.82 of Tailwind's sizes (below) and sit a
+     little tighter. */
   .display,
   .serif-display {
-    font-family: var(--font-instrument), ui-serif, Georgia, serif;
-    font-weight: 400;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 300;
     font-synthesis: none;
-    letter-spacing: -0.015em;
-    line-height: 0.95;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
     font-kerning: normal;
-    font-feature-settings: "kern", "liga", "dlig";
+    /* Tailwind's text-* sizes read these variables, so redefining them here scales every heading's size
+       (and sets a heading line height) without touching each component */
+    --text-xl: 1.05rem;
+    --text-xl--line-height: 1.25;
+    --text-2xl: 1.25rem;
+    --text-2xl--line-height: 1.2;
+    --text-3xl: 1.55rem;
+    --text-3xl--line-height: 1.15;
+    --text-4xl: 1.85rem;
+    --text-4xl--line-height: 1.1;
+    --text-5xl: 2.45rem;
+    --text-5xl--line-height: 1.06;
+    --text-6xl: 3.05rem;
+    --text-6xl--line-height: 1.04;
+    --text-7xl: 3.7rem;
+    --text-7xl--line-height: 1.02;
+    --text-8xl: 4.9rem;
+    --text-8xl--line-height: 1;
+    --text-9xl: 6.5rem;
+    --text-9xl--line-height: 1;
   }
   .display em,
   .serif-display em {
     font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 300;
   }
-  /* Cinematic titling (loader): tight, upright grotesk caps */
+  /* Cinematic titling (loader): Montserrat caps, spaced like the wordmark */
   .font-wide {
-    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 500;
-    letter-spacing: -0.035em;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  /* Noomo-style bracketed mono label */
+  /* Small caps label (nav, chips): Montserrat, wide tracking like the logo */
   .bracket {
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
   }
   .glow-text {
@@ -260,8 +280,11 @@ html:has([data-arriving="true"]) [data-chrome] {
 .font-sans {
   font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
+/* labels and data that were set in mono now use the logo face (Montserrat), with tabular figures */
 .font-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Lenis smooth scroll */
@@ -284,4 +307,25 @@ html.lenis body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Loading bar (Intro): runs from the first paint, before any script. Jupiter's glide is transform-only, so it
+   stays smooth on the compositor while the page sets up; the number is rolling digit strips on the same timing (loaderDigits.ts).
+   Script adds [data-done] once the page is ready, which plays the last 10%. */
+@keyframes load-mover-a { from { transform: translateX(0); } to { transform: translateX(90%); } }
+@keyframes load-mover-b { from { transform: translateX(90%); } to { transform: translateX(100%); } }
+@keyframes load-planet-a { from { transform: translate(0, -50%); } to { transform: translate(-90%, -50%); } }
+@keyframes load-planet-b { from { transform: translate(-90%, -50%); } to { transform: translate(-100%, -50%); } }
+/* timing shared by the glide and the digits */
+.in-load { --la: 1.6s; --lb: 0.45s; }
+.in-load .in-mover { animation: load-mover-a var(--la) cubic-bezier(0.33, 1, 0.68, 1) 0.2s both; will-change: transform; }
+.in-load .in-planet { animation: load-planet-a var(--la) cubic-bezier(0.33, 1, 0.68, 1) 0.2s both; will-change: transform; }
+.in-load[data-done] .in-mover { animation: load-mover-b var(--lb) cubic-bezier(0.45, 0, 0.55, 1) both; }
+.in-load[data-done] .in-planet { animation: load-planet-b var(--lb) cubic-bezier(0.45, 0, 0.55, 1) both; }
+.in-load .in-tens { animation: ld-tens-a var(--la) step-end 0.2s both; will-change: transform; }
+.in-load .in-ones { animation: ld-ones-a var(--la) step-end 0.2s both; will-change: transform; }
+.in-load[data-done] .in-tens { animation: ld-tens-b var(--lb) step-end both; }
+.in-load[data-done] .in-ones { animation: ld-ones-b var(--lb) step-end both; }
+@media (prefers-reduced-motion: reduce) {
+  .in-load { --la: 0.3s; --lb: 0.1s; }
 }

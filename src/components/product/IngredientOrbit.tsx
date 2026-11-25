@@ -50,7 +50,7 @@ export function IngredientOrbit({ slug }: { slug: string }) {
                 <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(243 238 230 / 0.12)" strokeWidth="0.25" />
                 <circle cx={x} cy={y} r="3.6" fill="var(--color-ink)" stroke={tone(p.color)} strokeWidth="0.5" />
                 <circle cx={x} cy={y} r="5.5" fill={p.color} opacity="0.12" />
-                <text x={x} y={y + 1.25} textAnchor="middle" fontSize="3.4" fill="var(--color-star)" fontFamily="var(--font-geist-mono)">
+                <text x={x} y={y + 1.25} textAnchor="middle" fontSize="3.4" fill="var(--color-star)" fontFamily="var(--font-montserrat)">
                   {String(i + 1).padStart(2, "0")}
                 </text>
               </g>

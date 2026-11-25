@@ -367,14 +367,14 @@ export function BlackHoleHero() {
         >
           <div className="flex items-start justify-between font-mono text-[11px] tracking-[0.18em] text-star/85 uppercase [text-shadow:0_0_14px_rgb(0_0_0/0.95)]">
             <span className="hero-anim ha-top">
-              [ Bangalore ]<span className="hidden xl:inline"> · Plant wisdom, thoughtfully considered</span>
+              Bangalore<span className="hidden xl:inline"> · Plant wisdom, thoughtfully considered</span>
             </span>
           </div>
 
           <div className="mt-auto text-center">
             {/* soft dark halo keeps the letters clear of the bright lensed ring behind them */}
             <h1
-              className="serif-display text-[22vw] leading-[0.85] [text-shadow:0_4px_40px_rgb(0_0_0/0.6)] sm:text-[17vw] lg:text-[13.5rem]"
+              className="serif-display text-[16vw] leading-[0.9] [text-shadow:0_4px_40px_rgb(0_0_0/0.6)] sm:text-[12.5vw] lg:text-[10rem]"
               aria-label="The Cure"
             >
               <span aria-hidden>

@@ -61,11 +61,11 @@ export function Pouch({
       <text x="100" y="214" textAnchor="middle" fill="var(--color-ink)" fontSize="15" fontWeight="800" fontFamily="var(--font-montserrat)">
         {name.toUpperCase()}
       </text>
-      <text x="100" y="234" textAnchor="middle" fill="var(--color-ink)" fontSize="6.6" letterSpacing="1" fontFamily="var(--font-geist-mono)" opacity="0.8">
+      <text x="100" y="234" textAnchor="middle" fill="var(--color-ink)" fontSize="6.6" letterSpacing="1" fontFamily="var(--font-montserrat)" opacity="0.8">
         {meta}
       </text>
       <line x1="70" y1="246" x2="130" y2="246" stroke="var(--color-ink)" strokeOpacity="0.35" />
-      <text x="100" y="258" textAnchor="middle" fill="var(--color-ink)" fontSize="5.2" letterSpacing="0.6" fontFamily="var(--font-geist-mono)" opacity="0.7">
+      <text x="100" y="258" textAnchor="middle" fill="var(--color-ink)" fontSize="5.2" letterSpacing="0.6" fontFamily="var(--font-montserrat)" opacity="0.7">
         LEAF EXTRACT · LAB TESTED
       </text>
     </svg>

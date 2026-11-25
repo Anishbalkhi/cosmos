@@ -21,7 +21,7 @@ export function LabSeal({ id = "seal", className, color = "var(--color-flare)" }
         </defs>
         <circle cx="50" cy="50" r="47" fill="none" stroke={color} strokeOpacity="0.5" strokeWidth="0.6" />
         <circle cx="50" cy="50" r="30" fill="none" stroke={color} strokeOpacity="0.35" strokeWidth="0.4" strokeDasharray="1 2" />
-        <text fontSize="6.4" letterSpacing="2.6" fill="var(--color-star)" fontFamily="var(--font-geist-mono)">
+        <text fontSize="6.4" letterSpacing="2.6" fill="var(--color-star)" fontFamily="var(--font-montserrat)">
           <textPath href={`#${ring}`}>LAB TESTED · EVERY BATCH · INDEPENDENT LAB ·</textPath>
         </text>
       </svg>
