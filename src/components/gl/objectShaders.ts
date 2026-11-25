@@ -167,12 +167,12 @@ vec3 blackHoleBg(vec2 uv, vec3 c){
   c += hot * 1.5 * exp(-sq((r - R * 1.22) / 0.016)) * up * dop;             // far side of the disk, lensed over the top
   float w = 0.005 + 0.014 * smoothstep(0.0, 0.5, abs(d.x));
   float disk = exp(-sq(d.y / w)) * (1.0 - smoothstep(0.16, 0.62, abs(d.x)));
-  c += hot * 2.4 * disk * dop;                                               // near side crossing in front
+  c += hot * 1.4 * disk * dop;                                               // near side crossing in front (dimmer: it slashed across the pouch)
   c += hot * 0.06 * exp(-r * 4.0);
   return c;
 }
 vec3 earthBg(vec2 uv, vec3 c){
-  vec2 pc = vec2(0.0, -1.0);
+  vec2 pc = vec2(0.0, -1.08);                                                  // a little lower, so the pouch clears the horizon
   float R = 0.8;
   vec2 d = (uv - pc) / R;
   float r = length(d);
@@ -187,12 +187,12 @@ vec3 earthBg(vec2 uv, vec3 c){
   }
   vec2 sp = pc + R * normalize(vec2(-0.55, 1.0));                              // sunrise on the limb
   float sd = length(uv - sp);
-  c += vec3(1.0, 0.86, 0.66) * (5.0 * exp(-sd * sd / 0.00007) + 0.3 * exp(-sd / 0.05));
+  c += vec3(1.0, 0.86, 0.66) * (2.0 * exp(-sd * sd / 0.00007) + 0.2 * exp(-sd / 0.05));
   return c;
 }
 vec3 moonBg(vec2 uv, vec3 c){
-  vec2 pc = vec2(0.33, -0.37);
-  float R = 0.4;
+  vec2 pc = vec2(0.16, -0.42);                                                 // inside the card (cards are portrait: x spans only +-0.5)
+  float R = 0.32;
   vec2 d = (uv - pc) / R;
   float r = length(d);
   if (r < 1.0) {
@@ -205,7 +205,7 @@ vec3 moonBg(vec2 uv, vec3 c){
   vec2 sq = uv - sp;
   float sd = length(sq);
   float spikes = exp(-abs(sq.y) * 260.0) * exp(-abs(sq.x) * 10.0) + exp(-abs(sq.x) * 260.0) * exp(-abs(sq.y) * 10.0);
-  c += vec3(1.0, 0.8, 0.5) * (1.4 * exp(-sd * sd / 0.0005) + 0.4 * exp(-sd / 0.08) + 0.5 * spikes);
+  c += vec3(1.0, 0.8, 0.5) * (0.8 * exp(-sd * sd / 0.0005) + 0.25 * exp(-sd / 0.08) + 0.2 * spikes);   // a star, not a starburst
   return c;
 }
 vec3 background(vec2 uv){

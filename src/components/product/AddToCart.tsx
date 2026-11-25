@@ -1,23 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { useCart } from "@/lib/cart";
 import { QtyStepper } from "./QtyStepper";
 
 export function AddToCartButton({ slug, className, label = "Add to cart" }: { slug: string; className?: string; label?: string }) {
   const add = useCart((s) => s.add);
+  // a moment of confirmation on the button itself (the cart count alone is easy to miss)
+  const [added, setAdded] = useState(false);
+  useEffect(() => {
+    if (!added) return;
+    const t = window.setTimeout(() => setAdded(false), 1600);
+    return () => window.clearTimeout(t);
+  }, [added]);
   return (
     <button
       type="button"
       data-sfx="added"
-      onClick={() => add(slug)}
+      onClick={() => {
+        add(slug);
+        setAdded(true);
+      }}
       className={clsx(
-        "inline-flex h-11 items-center justify-center rounded-full bg-star px-5 text-sm font-semibold text-space transition-all duration-300 ease-cosmic hover:bg-flare",
+        "inline-flex h-11 min-w-20 items-center justify-center rounded-full bg-flare px-5 text-sm font-semibold text-space transition-all duration-300 ease-cosmic hover:bg-flare-soft",
         className,
       )}
     >
-      {label}
+      <span aria-live="polite">{added ? "Added ✓" : label}</span>
     </button>
   );
 }

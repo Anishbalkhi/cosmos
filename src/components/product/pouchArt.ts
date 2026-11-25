@@ -80,8 +80,11 @@ async function build(p: Product): Promise<PouchTextures> {
   const planet = src ? await loadImage(src) : null;
 
   const label = document.createElement("canvas");
-  label.width = label.height = 1024;
+  // twice the resolution on larger screens: at 1024 the label's name and small print came out blurry on the cards
+  const hi = typeof window !== "undefined" && (window.innerWidth >= 900 || window.devicePixelRatio >= 2) ? 2 : 1;
+  label.width = label.height = 1024 * hi;
   const ctx = label.getContext("2d")!;
+  ctx.scale(hi, hi);
   // each half is laid out at the pouch's proportions (512 × 726) and stretched to 512 × 1024
   const sy = 1024 / 726;
   ctx.save();
@@ -154,10 +157,11 @@ function wordmark(ctx: CanvasRenderingContext2D, cx: number, y: number, size: nu
   ctx.textAlign = "left";
   const wc = ctx.measureText("C").width;
   const ws = ctx.measureText("SMOS").width;
-  const gap = size * 0.95;
+  const gap = size * 1.15;
   const x = cx - (wc + gap + ws) / 2;
   ctx.fillText("C", x, y);
-  leafStar(ctx, x + wc + gap / 2 - size * 0.06, y - size * 0.37, size * 0.95, INK);
+  // the leaf stands in for the O, so it's as big as a capital (smaller, the pouch seemed to say "CSMOS")
+  leafStar(ctx, x + wc + gap / 2 - size * 0.06, y - size * 0.4, size * 1.2, INK);
   ctx.fillText("SMOS", x + wc + gap, y);
   ctx.letterSpacing = "0px";
 }

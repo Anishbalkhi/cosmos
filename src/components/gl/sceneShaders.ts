@@ -42,12 +42,7 @@ void main(){
     vec3 rc = vec3(0.9, 0.76, 0.58) * bands * (0.45 + 0.7 * grain) * (1.0 - 0.85 * gap) * 0.55;
     col = mix(col, rc, fade * 0.95);
   }
-  // boulders rushing past in the foreground, lit from behind
-  gLight = normalize(vec3(-0.7, -0.55, 0.35));
-  gRockTint = vec3(0.6, 0.5, 0.4);
-  gRimTint = vec3(1.0, 0.82, 0.6);
-  vec4 rk = rocks(uv, 3.2, 21.0, vec2(uTime * 0.12, uTime * 0.04), 1.0, px * 3.2 * 2.0, 0.8);
-  col = mix(col, rk.rgb, rk.a * smoothstep(hz + 0.05, hz - 0.25, q.y));
+  // (the foreground boulders are gone: out of focus they read as smudges on the screen, not rocks)
   col *= smoothstep(1.6, 0.35, length(uv));
   gl_FragColor = finish(col);
 }`;

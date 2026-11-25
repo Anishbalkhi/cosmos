@@ -16,6 +16,8 @@ const GLOW: Partial<Record<PlanetName, string>> = {
   sun: "rgba(255,170,80,0.35)",
 };
 
+// a scene behind a blended header: no colour fringing, lighter grain
+const SCENE_POST = { threshold: 0.75, bloom: 0.4, streak: 0.12, aberration: 0, exposure: 1.0, grain: 0.02, vignette: 0.2 };
 const POST = { threshold: 0.75, bloom: 0.45, streak: 0.15, aberration: 0.012, exposure: 1.1, grain: 0.035, vignette: 0.25 };
 
 /**
@@ -49,17 +51,31 @@ export function PageHeader({
         // a blended header is not its own stacking context, so its visual can be screened onto the sky behind the
         // page, and it only clips sideways: the black hole's disk can run on below it instead of ending in a line
         blend ? "overflow-x-clip" : "grain isolate overflow-hidden border-b border-line",
-        scene && "flex min-h-[62vh] flex-col justify-end sm:min-h-[70vh]",
+        scene && "flex flex-col justify-end",
+        // with the shared sky behind it a scene header can be short: the page's own content reaches the first screen
+        scene && (blend ? "min-h-[48vh] sm:min-h-[54vh]" : "min-h-[62vh] sm:min-h-[70vh]"),
       )}
     >
       {scene ? (
         <>
-          <div className="absolute inset-0 -z-20" aria-hidden>
-            <ShaderCanvas frag={scene} scale={0.55} post={POST} />
-          </div>
-          {/* the type sits on the darker lower-left of every scene */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-space via-space/45 to-transparent" aria-hidden />
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-space/70 via-transparent to-transparent" aria-hidden />
+          {blend ? (
+            // fades out at the top (under the nav) and the bottom (into the page's night sky) instead of ending in a rule
+            <div
+              className="absolute inset-0 z-0 opacity-80 [mask-image:linear-gradient(to_bottom,transparent,#000_22%,#000_50%,transparent)]"
+              aria-hidden
+            >
+              <ShaderCanvas frag={scene} scale={0.55} post={SCENE_POST} />
+            </div>
+          ) : (
+            <>
+              <div className="absolute inset-0 -z-20" aria-hidden>
+                <ShaderCanvas frag={scene} scale={0.55} post={POST} />
+              </div>
+              {/* the type sits on the darker lower-left of every scene */}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-space via-space/45 to-transparent" aria-hidden />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-space/70 via-transparent to-transparent" aria-hidden />
+            </>
+          )}
         </>
       ) : (
         <div
@@ -91,7 +107,7 @@ export function PageHeader({
           {title}
         </h1>
         {intro && (
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-star/75 [text-shadow:0_1px_14px_rgb(0_0_0/0.9)] sm:text-lg sm:text-dust">{intro}</p>
+          <p className="mt-8 max-w-2xl text-base leading-relaxed text-balance text-star/75 [text-shadow:0_1px_14px_rgb(0_0_0/0.9)] sm:text-lg sm:text-dust">{intro}</p>
         )}
         {children}
       </Container>

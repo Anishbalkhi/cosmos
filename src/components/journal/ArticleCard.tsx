@@ -32,13 +32,14 @@ export function ArticleCover({ article, className = "", size = "md" }: { article
         shade="side"
         glow={c.glow}
         sizes={size === "lg" ? "(max-width: 768px) 90vw, 460px" : "(max-width: 768px) 90vw, 380px"}
-        className="absolute top-[28%] left-[6%] w-[100%] transition-transform duration-[1.6s] ease-cosmic group-hover:scale-[1.04] group-hover:rotate-[4deg]"
+        // inside the frame (it was 100% wide from 6% in, so its right side was cut by the cover's edge)
+        className="absolute top-[30%] left-[8%] w-[84%] transition-transform duration-[1.6s] ease-cosmic group-hover:scale-[1.04] group-hover:rotate-[4deg]"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/85" />
       <div className="absolute inset-x-0 top-0 flex flex-col items-center px-[7%] pt-[5%]">
+        {/* issue and month only: with the strapline too, the line ran together on the smaller covers */}
         <div className="flex w-full justify-between font-mono text-[11px] tracking-[0.16em] uppercase opacity-85">
           <span>Issue {issueOf(article)}</span>
-          <span className="hidden sm:inline">The science of everyday</span>
           <span>{month}</span>
         </div>
         <p className={`serif-display mt-1 leading-none tracking-[0.02em] ${size === "lg" ? "text-[17vw] sm:text-[9vw] lg:text-[7.5rem]" : "text-[18vw] sm:text-[8vw] md:text-[5.2vw] lg:text-[4.6rem]"}`}>
@@ -61,7 +62,8 @@ export function ArticleCard({ article }: { article: Article }) {
       <p className="mt-5 text-sm text-dust">
         {article.tag} · {formatDate(article.date)} · {article.minutes} min read
       </p>
-      <p className="mt-2 text-sm text-dust">{article.excerpt}</p>
+      <h3 className="display mt-2 text-2xl transition-colors group-hover:text-flare-soft">{article.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-star/70">{article.excerpt}</p>
     </Link>
   );
 }

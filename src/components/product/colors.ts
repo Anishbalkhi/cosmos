@@ -3,7 +3,7 @@ export type RGB = [number, number, number];
 
 // gummy colours follow each formula's flavour: blackcurrant, mango, orange
 export const GUMMY: Record<string, RGB> = {
-  "event-horizon": [0.34, 0.07, 0.5],
+  "event-horizon": [0.5, 0.17, 0.6],   // lighter blackcurrant: the deep purple read as grapes
   nirvana: [1.0, 0.6, 0.1],
   "moonwalk-bytes": [1.0, 0.42, 0.06],
 };
