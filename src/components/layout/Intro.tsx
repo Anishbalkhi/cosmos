@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { LeafStar } from "@/components/brand/LeafStar";
-import { AGE_KEY, SEEN_KEY, introNeeded, useExperience } from "@/lib/experience";
+import { AGE_KEY, SEEN_KEY, useExperience } from "@/lib/experience";
 import { ambient } from "@/lib/ambient";
 import { SoundToggle } from "./SoundToggle";
 
@@ -29,8 +29,7 @@ export function Intro() {
   const setIntroDone = useExperience((s) => s.setIntroDone);
   const setBoost = useExperience((s) => s.setBoost);
   const setPortal = useExperience((s) => s.setPortal);
-  // the loading bar shows on every full page load (it also covers the black hole's shader compile);
-  // returning visitors skip the age check and the portal: the curtain just fades away
+  // the loading bar and then START show on every full page load (the bar also covers the black hole's shader compile)
   const show = !gone;
 
   useEffect(() => {
@@ -92,28 +91,14 @@ export function Intro() {
               duration: 0.6,
               ease: "expo.in",
               stagger: 0.05,
-              onComplete: () => {
-                // read now, not at first render (that one is the server's guess, which is always "first visit")
-                if (introNeeded()) return setPhase("start");
-                // returning visitor: no age check, no portal; the curtain fades and the arrival starts
-                gsap.to(root.current, {
-                  opacity: 0,
-                  duration: 0.6,
-                  ease: "power2.out",
-                  // the arrival waits on its first frame behind the fade and starts once the curtain is gone
-                  onComplete: () => {
-                    setIntroDone(true);
-                    setGone(true);
-                  },
-                });
-              },
+              // the START screen follows every loading bar, first visit or not (the owner wants it each time;
+              // a returning visitor used to skip it and fade straight in)
+              onComplete: () => setPhase("start"),
             }),
           );
         });
     }, root);
     return () => ctx.revert();
-    // setIntroDone is a stable store action
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   // 2. start screen enters
